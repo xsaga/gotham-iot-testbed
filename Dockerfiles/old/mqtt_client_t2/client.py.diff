@@ -1,0 +1,25 @@
+diff --git a/Dockerfiles/iotclient_2/client.py b/Dockerfiles/iotclient_2/client.py
+index b0228bc..de4e8d0 100644
+--- a/Dockerfiles/iotclient_2/client.py
++++ b/Dockerfiles/iotclient_2/client.py
+@@ -25,8 +25,19 @@ def proc_stat():
+         content = f.read()
+     return content
+ 
++def proc_interrupts():
++    with open("/proc/interrupts", "r") as f:
++        content = f.read()
++    return content
++
++def proc_meminfo():
++    with open("/proc/meminfo", "r") as f:
++        content = f.read()
++    return content
++
++
+ while True:
+-    message = f"/proc/stat:{proc_stat()}"
++    message = f"/proc/stat:{proc_stat()}; /proc/interrupts:{proc_interrupts()}; /proc/meminfo:{proc_meminfo()}"
+     publish.single(topic=config["MQTT_TOPIC_PUB"], payload=message, hostname=config["MQTT_BROKER_ADDR"])
+     sleep_time = random.gauss(float(config["SLEEP_TIME"]), float(config["SLEEP_TIME_SD"]))
+     sleep_time = float(config["SLEEP_TIME"]) if sleep_time < 0 else sleep_time

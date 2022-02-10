@@ -1,0 +1,35 @@
+# docker build --no-cache -t command-control-server .
+FROM ubuntu:focal
+
+RUN apt update && apt install -y --no-install-recommends \
+    ca-certificates \
+    wget \
+    p7zip-full \
+    git \
+    gcc \
+    make \
+    libpcap-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /opt/merlin
+# seleccionar una version especifica (releases/tag/v1.0.0) en vez de usar latest
+RUN wget https://github.com/Ne0nd0g/merlin/releases/latest/download/merlinServer-Linux-x64.7z \
+    && 7z x -pmerlin merlinServer-Linux-x64.7z
+RUN rm -rf data/bin/*
+
+# en vez de 'ln -s', modificar 'libpcap_stuff.c' y 'script.c' <net/bpf.h> por <pcap-bpf.h>
+WORKDIR /opt/hping3
+RUN git clone https://github.com/antirez/hping . \
+    && ln -s /usr/include/pcap-bpf.h /usr/include/net/bpf.h \
+    && ./configure --no-tcl \
+    && make hping3-static
+
+FROM ubuntu:focal
+
+WORKDIR /opt/merlin
+COPY --from=0 /opt/merlin/data data
+COPY --from=0 /opt/merlin/merlinServer-Linux-x64 ./
+
+COPY --from=0 /opt/hping3/hping3-static /opt/hping3/hping3-static
+
+CMD ["/bin/bash"]
