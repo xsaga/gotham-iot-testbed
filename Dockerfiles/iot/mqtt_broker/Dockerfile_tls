@@ -1,0 +1,6 @@
+FROM eclipse-mosquitto:2.0-openssl
+
+ADD --chown=mosquitto:mosquitto mosquitto_tls.conf /mosquitto/config/mosquitto.conf
+
+COPY --from=iotsim/certificates:latest --chown=mosquitto:mosquitto /artifacts/pki/* /mosquitto/config/
+
