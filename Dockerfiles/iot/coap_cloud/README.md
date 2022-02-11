@@ -1,0 +1,1 @@
+coap-client-mod.c modified from the original coap-client.c in https://github.com/obgm/libcoap

@@ -1,12 +1,30 @@
+FROM ubuntu:focal AS builder
+
+RUN apt update && apt install -y --no-install-recommends \
+    git \
+    build-essential \
+    pkg-config \
+    libtool \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /opt
+RUN git clone https://github.com/obgm/libcoap.git --recursive
+WORKDIR libcoap
+RUN git checkout main
+COPY coap-client-mod.c examples/coap-client.c
+RUN ./autogen.sh &&\
+    ./configure --enable-examples --enable-dtls --with-tinydtls --disable-shared --disable-documentation &&\
+    make
+
+
 FROM ubuntu:focal
 
 RUN apt update && apt install -y --no-install-recommends \
     python3 \
-    libcoap2 \
-    libcoap2-bin \
     && rm -rf /var/lib/apt/lists/*
 
 COPY coap_cloud.py /coap_cloud.py
+COPY --from=builder /opt/libcoap/examples/coap-client-tinydtls /coap-client
 RUN chmod +x /coap_cloud.py
 
 ENTRYPOINT ["/coap_cloud.py"]
