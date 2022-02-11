@@ -3,7 +3,7 @@ ifdef NOCACHE
 BUILD_CMD += --no-cache
 endif
 
-.PHONY: all clean imagerm
+.PHONY: all clean imagerm Mirai_experimentation
 
 all: buildstatus/DNS buildstatus/certificates \
      buildstatus/Merlin buildstatus/Mirai_builder buildstatus/Mirai_cnc buildstatus/Mirai_bot \
@@ -13,6 +13,9 @@ all: buildstatus/DNS buildstatus/certificates \
      buildstatus/mqtt_client_t1_compromised buildstatus/mqtt_client_t2_compromised buildstatus/coap_server_compromised \
      buildstatus/debug_client
 
+
+Mirai_experimentation: Dockerfiles/malware/Mirai/Dockerfile_experimentation
+	$(BUILD_CMD) --file $< --tag iotsim/mirai-experimentation Dockerfiles/malware/Mirai
 
 buildstatus/DNS: Dockerfiles/DNS/Dockerfile Dockerfiles/DNS/dnsmasq.conf
 	$(BUILD_CMD) --file $< --tag iotsim/dns Dockerfiles/DNS
