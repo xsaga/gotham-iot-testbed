@@ -3,6 +3,8 @@ ifdef NOCACHE
 BUILD_CMD += --no-cache
 endif
 
+MERLIN_RELEASE_VER = v1.2.1
+
 .PHONY: all clean imagerm Mirai_experimentation
 
 all: buildstatus/DNS buildstatus/certificates \
@@ -28,7 +30,7 @@ buildstatus/certificates: Dockerfiles/certificates/Dockerfile
 	@touch $@
 
 buildstatus/Merlin: Dockerfiles/malware/Merlin/Dockerfile
-	$(BUILD_CMD) --file $< --tag iotsim/merlin-cnc Dockerfiles/malware/Merlin
+	$(BUILD_CMD) --build-arg MERLIN_RELEASE_VER=$(MERLIN_RELEASE_VER) --file $< --tag iotsim/merlin-cnc Dockerfiles/malware/Merlin
 	sleep 2
 	@touch $@
 
