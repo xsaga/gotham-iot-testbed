@@ -95,7 +95,7 @@ buildstatus/coap_server_compromised: Dockerfiles/iot/compromised/Dockerfile.coap
 	@touch $@
 
 clean:
-	rm buildstatus/*
+	rm -f buildstatus/*
 
 imagerm: clean
 	docker image ls | grep "^iotsim/" | awk '{print $$3}' | xargs docker image rm -f
