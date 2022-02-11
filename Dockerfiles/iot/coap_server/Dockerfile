@@ -23,6 +23,6 @@ FROM ubuntu:focal
 #     libcoap2-bin \
 #     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /opt/libcoap/examples/coap-server-tinydtls /coap-server
+COPY --from=builder /opt/libcoap/examples/coap-server-tinydtls /opt/coap-server
 
-ENTRYPOINT [ "/coap-server", "-p", "5683", "-d", "10" ]
+ENTRYPOINT [ "/opt/coap-server", "-p", "5683", "-d", "10" ]

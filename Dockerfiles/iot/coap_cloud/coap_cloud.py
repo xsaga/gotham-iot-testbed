@@ -38,7 +38,7 @@ for ip_range in list(map(str.strip, config["COAP_ADDR_LIST"].split(";"))):
         address_list.extend(iprange(*list(map(str.strip, ip_range.split("-")))))
 config["COAP_ADDR_LIST"] = address_list
 
-coap_bin = shutil.which("coap-client")
+coap_bin = shutil.which("coap-client", path=os.environ["PATH"]+":/opt")
 if not coap_bin:
     sys.exit("No 'coap-client' binary found. Exiting.")
 

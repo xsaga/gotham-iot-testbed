@@ -22,9 +22,9 @@ RUN apt update && apt install -y --no-install-recommends \
     python3 \
     && rm -rf /var/lib/apt/lists/*
 
-COPY coap_cloud.py /coap_cloud.py
-COPY --from=builder /opt/libcoap/examples/coap-client-tinydtls /coap-client
-RUN chmod +x /coap_cloud.py
+COPY coap_cloud.py /opt/coap_cloud.py
+COPY --from=builder /opt/libcoap/examples/coap-client-tinydtls /opt/coap-client
+RUN chmod +x /opt/coap_cloud.py
 
-ENTRYPOINT ["/coap_cloud.py"]
+ENTRYPOINT ["/opt/coap_cloud.py"]
 # CMD ["/bin/bash"]
