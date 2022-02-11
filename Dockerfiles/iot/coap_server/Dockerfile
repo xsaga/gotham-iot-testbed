@@ -1,16 +1,15 @@
 FROM ubuntu:focal AS builder
 
-RUN apt update && apt install -y --no-install-recommends \
+RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
     git \
     build-essential \
     pkg-config \
     libtool \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /opt
-RUN git clone https://github.com/obgm/libcoap.git --recursive
-WORKDIR libcoap
-RUN git checkout main
+WORKDIR /opt/libcoap
+RUN git clone https://github.com/obgm/libcoap.git --recursive . &&\
+    git checkout main
 COPY coap-server-mod.c examples/coap-server.c
 RUN ./autogen.sh &&\
     ./configure --enable-examples --enable-dtls --with-tinydtls --disable-shared --disable-documentation &&\
