@@ -14,7 +14,7 @@ all: buildstatus/DNS buildstatus/certificates \
      buildstatus/debug_client
 
 
-buildstatus/DNS: Dockerfiles/DNS/Dockerfile
+buildstatus/DNS: Dockerfiles/DNS/Dockerfile Dockerfiles/DNS/dnsmasq.conf
 	$(BUILD_CMD) --file $< --tag iotsim/dns Dockerfiles/DNS
 	sleep 2
 	@touch $@
