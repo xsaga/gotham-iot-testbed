@@ -20,19 +20,19 @@ all: buildstatus/DNS buildstatus/certificates \
 templates: Dockerfiles/certificates/Dockerfile Dockerfiles/DNS/dnsmasq.conf \
            Dockerfiles/malware/Mirai/Dockerfile_cnc Dockerfiles/malware/Mirai/Dockerfile_builder
 
-Dockerfiles/certificates/Dockerfile: Dockerfiles/certificates/Dockerfile.template iot-sim.config
+Dockerfiles/certificates/Dockerfile: Dockerfiles/certificates/Dockerfile.template $(CONFIG_FILE)
 	sed 's/!PLACEHOLDER-MQTT_TLS_BROKER_CN!/$(MQTT_TLS_BROKER_CN)/g' $< > $@
 
-Dockerfiles/DNS/dnsmasq.conf: Dockerfiles/DNS/dnsmasq.conf.template iot-sim.config
+Dockerfiles/DNS/dnsmasq.conf: Dockerfiles/DNS/dnsmasq.conf.template $(CONFIG_FILE)
 	sed -e 's/!PLACEHOLDER-LOCAL_DOMAIN!/$(LOCAL_DOMAIN)/g' \
             -e 's/!PLACEHOLDER-MIRAI_CNC_IPADDR!/$(MIRAI_CNC_IPADDR)/g' \
             -e 's/!PLACEHOLDER-MIRAI_REPORT_IPADDR!/$(MIRAI_REPORT_IPADDR)/g' $< > $@
 
-Dockerfiles/malware/Mirai/Dockerfile_cnc: Dockerfiles/malware/Mirai/Dockerfile_cnc.template iot-sim.config
+Dockerfiles/malware/Mirai/Dockerfile_cnc: Dockerfiles/malware/Mirai/Dockerfile_cnc.template $(CONFIG_FILE)
 	sed -e 's/!PLACEHOLDER-MIRAI_DB_USERNAME!/$(MIRAI_DB_USERNAME)/g' \
             -e 's/!PLACEHOLDER-MIRAI_DB_PASSWORD!/$(MIRAI_DB_PASSWORD)/g' $< > $@
 
-Dockerfiles/malware/Mirai/Dockerfile_builder: Dockerfiles/malware/Mirai/Dockerfile_builder.template iot-sim.config
+Dockerfiles/malware/Mirai/Dockerfile_builder: Dockerfiles/malware/Mirai/Dockerfile_builder.template $(CONFIG_FILE)
 	LAB_DNS_IPADDR_COMMAS=$(shell echo $(LAB_DNS_IPADDR) | tr "." ","); \
 	sed "s/!PLACEHOLDER-LAB_DNS_IPADDR!/$$LAB_DNS_IPADDR_COMMAS/g" $< > $@
 
@@ -41,82 +41,66 @@ Mirai_experimentation: Dockerfiles/malware/Mirai/Dockerfile_experimentation
 
 buildstatus/DNS: Dockerfiles/DNS/Dockerfile Dockerfiles/DNS/dnsmasq.conf
 	$(BUILD_CMD) --file $< --tag iotsim/dns Dockerfiles/DNS
-	sleep 2
 	@touch $@
 
 buildstatus/certificates: Dockerfiles/certificates/Dockerfile
 	$(BUILD_CMD) --file $< --tag iotsim/certificates Dockerfiles/certificates
-	sleep 2
 	@touch $@
 
-buildstatus/Merlin: Dockerfiles/malware/Merlin/Dockerfile iot-sim.config
+buildstatus/Merlin: Dockerfiles/malware/Merlin/Dockerfile $(CONFIG_FILE)
 	$(BUILD_CMD) --build-arg MERLIN_RELEASE_VER=$(MERLIN_RELEASE_VER) --file $< --tag iotsim/merlin-cnc Dockerfiles/malware/Merlin
-	sleep 2
 	@touch $@
 
 buildstatus/Mirai_builder: Dockerfiles/malware/Mirai/Dockerfile_builder
 	$(BUILD_CMD) --file $< --tag iotsim/mirai-builder Dockerfiles/malware/Mirai
-	sleep 2
 	@touch $@
 
 buildstatus/Mirai_cnc: Dockerfiles/malware/Mirai/Dockerfile_cnc buildstatus/Mirai_builder
 	$(BUILD_CMD) --file $< --tag iotsim/mirai-cnc Dockerfiles/malware/Mirai
-	sleep 2
 	@touch $@
 
 buildstatus/Mirai_bot: Dockerfiles/malware/Mirai/Dockerfile_bot buildstatus/Mirai_builder
 	$(BUILD_CMD) --file $< --tag iotsim/mirai-bot Dockerfiles/malware/Mirai
-	sleep 2
 	@touch $@
 
 buildstatus/mqtt_broker_1.6: Dockerfiles/iot/mqtt_broker/Dockerfile_1.6
 	$(BUILD_CMD) --file $< --tag iotsim/mqtt-broker-1.6 Dockerfiles/iot/mqtt_broker
-	sleep 2
 	@touch $@
 
 buildstatus/mqtt_broker_tls: Dockerfiles/iot/mqtt_broker/Dockerfile_tls Dockerfiles/iot/mqtt_broker/mosquitto_tls.conf buildstatus/certificates
 	$(BUILD_CMD) --file $< --tag iotsim/mqtt-broker-tls Dockerfiles/iot/mqtt_broker
-	sleep 2
 	@touch $@
 
 buildstatus/mqtt_client_t1: Dockerfiles/iot/mqtt_client_t1/Dockerfile Dockerfiles/iot/mqtt_client_t1/client.py
 	$(BUILD_CMD) --file $< --tag iotsim/mqtt-client-t1 Dockerfiles/iot/mqtt_client_t1
-	sleep 2
 	@touch $@
 
 buildstatus/mqtt_client_t2: Dockerfiles/iot/mqtt_client_t2/Dockerfile Dockerfiles/iot/mqtt_client_t2/client.py
 	$(BUILD_CMD) --file $< --tag iotsim/mqtt-client-t2 Dockerfiles/iot/mqtt_client_t2
-	sleep 2
 	@touch $@
 
 buildstatus/coap_server: Dockerfiles/iot/coap_server/Dockerfile Dockerfiles/iot/coap_server/coap-server-mod.c
 	$(BUILD_CMD) --file $< --tag iotsim/coap-server Dockerfiles/iot/coap_server
-	sleep 2
 	@touch $@
 
 buildstatus/coap_cloud: Dockerfiles/iot/coap_cloud/Dockerfile Dockerfiles/iot/coap_cloud/coap-client-mod.c Dockerfiles/iot/coap_cloud/coap_cloud.py
 	$(BUILD_CMD) --file $< --tag iotsim/coap-cloud Dockerfiles/iot/coap_cloud
-	sleep 2
 	@touch $@
 
 buildstatus/debug_client: Dockerfiles/iot/debug_client/Dockerfile
 	$(BUILD_CMD) --file $< --tag iotsim/debug-client Dockerfiles/iot/debug_client
-	sleep 2
 	@touch $@
 
 buildstatus/mqtt_client_t1_compromised: Dockerfiles/iot/compromised/Dockerfile.mqtt_client_t1 buildstatus/Merlin buildstatus/mqtt_client_t1
 	$(BUILD_CMD) --file $< --tag iotsim/mqtt-client-compromised-t1 Dockerfiles/iot/compromised
-	sleep 2
 	@touch $@
 
 buildstatus/mqtt_client_t2_compromised: Dockerfiles/iot/compromised/Dockerfile.mqtt_client_t2 buildstatus/Merlin buildstatus/mqtt_client_t2
 	$(BUILD_CMD) --file $< --tag iotsim/mqtt-client-compromised-t2 Dockerfiles/iot/compromised
-	sleep 2
 	@touch $@
 
 buildstatus/coap_server_compromised: Dockerfiles/iot/compromised/Dockerfile.coap_client_t1 buildstatus/Merlin buildstatus/coap_server
 	$(BUILD_CMD) --file $< --tag iotsim/coap-server-compromised Dockerfiles/iot/compromised
-	sleep 2
 	@touch $@
 
 clean:
