@@ -49,7 +49,7 @@ buildstatus/certificates: Dockerfiles/certificates/Dockerfile
 	sleep 2
 	@touch $@
 
-buildstatus/Merlin: Dockerfiles/malware/Merlin/Dockerfile
+buildstatus/Merlin: Dockerfiles/malware/Merlin/Dockerfile iot-sim.config
 	$(BUILD_CMD) --build-arg MERLIN_RELEASE_VER=$(MERLIN_RELEASE_VER) --file $< --tag iotsim/merlin-cnc Dockerfiles/malware/Merlin
 	sleep 2
 	@touch $@
