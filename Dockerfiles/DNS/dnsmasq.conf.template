@@ -75,7 +75,7 @@ server=1.0.0.1
 # from /etc/hosts or DHCP only.
 #local=/localnet/
 # /etc/hosts is updated in GNS3
-local=/lan/
+local=/!PLACEHOLDER-LOCAL_DOMAIN!/
 
 # Add domains which you want to force to an IP address here.
 # The example below send any host in double-click.net to a local
@@ -86,8 +86,8 @@ local=/lan/
 #address=/www.thekelleys.org.uk/fe80::20d:60ff:fe36:f83
 
 # force IP address to Mirai default domains
-address=/cnc.changeme.com/192.168.0.100
-address=/report.changeme.com/192.168.0.101
+address=/cnc.changeme.com/!PLACEHOLDER-MIRAI_CNC_IPADDR!
+address=/report.changeme.com/!PLACEHOLDER-MIRAI_REPORT_IPADDR!
 
 # Add the IPs of all queries to yahoo.com, google.com, and their
 # subdomains to the vpn and search ipsets:

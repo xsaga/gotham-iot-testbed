@@ -3,9 +3,11 @@ ifdef NOCACHE
 BUILD_CMD += --no-cache
 endif
 
-MERLIN_RELEASE_VER = v1.2.1
+CONFIG_FILE = iot-sim.config
+include $(CONFIG_FILE)
 
-.PHONY: all clean imagerm Mirai_experimentation
+
+.PHONY: all templates clean imagerm Mirai_experimentation
 
 all: buildstatus/DNS buildstatus/certificates \
      buildstatus/Merlin buildstatus/Mirai_builder buildstatus/Mirai_cnc buildstatus/Mirai_bot \
@@ -15,6 +17,24 @@ all: buildstatus/DNS buildstatus/certificates \
      buildstatus/mqtt_client_t1_compromised buildstatus/mqtt_client_t2_compromised buildstatus/coap_server_compromised \
      buildstatus/debug_client
 
+templates: Dockerfiles/certificates/Dockerfile Dockerfiles/DNS/dnsmasq.conf \
+           Dockerfiles/malware/Mirai/Dockerfile_cnc Dockerfiles/malware/Mirai/Dockerfile_builder
+
+Dockerfiles/certificates/Dockerfile: Dockerfiles/certificates/Dockerfile.template iot-sim.config
+	sed 's/!PLACEHOLDER-MQTT_TLS_BROKER_CN!/$(MQTT_TLS_BROKER_CN)/g' $< > $@
+
+Dockerfiles/DNS/dnsmasq.conf: Dockerfiles/DNS/dnsmasq.conf.template iot-sim.config
+	sed -e 's/!PLACEHOLDER-LOCAL_DOMAIN!/$(LOCAL_DOMAIN)/g' \
+            -e 's/!PLACEHOLDER-MIRAI_CNC_IPADDR!/$(MIRAI_CNC_IPADDR)/g' \
+            -e 's/!PLACEHOLDER-MIRAI_REPORT_IPADDR!/$(MIRAI_REPORT_IPADDR)/g' $< > $@
+
+Dockerfiles/malware/Mirai/Dockerfile_cnc: Dockerfiles/malware/Mirai/Dockerfile_cnc.template iot-sim.config
+	sed -e 's/!PLACEHOLDER-MIRAI_DB_USERNAME!/$(MIRAI_DB_USERNAME)/g' \
+            -e 's/!PLACEHOLDER-MIRAI_DB_PASSWORD!/$(MIRAI_DB_PASSWORD)/g' $< > $@
+
+Dockerfiles/malware/Mirai/Dockerfile_builder: Dockerfiles/malware/Mirai/Dockerfile_builder.template iot-sim.config
+	LAB_DNS_IPADDR_COMMAS=$(shell echo $(LAB_DNS_IPADDR) | tr "." ","); \
+	sed "s/!PLACEHOLDER-LAB_DNS_IPADDR!/$$LAB_DNS_IPADDR_COMMAS/g" $< > $@
 
 Mirai_experimentation: Dockerfiles/malware/Mirai/Dockerfile_experimentation
 	$(BUILD_CMD) --file $< --tag iotsim/mirai-experimentation Dockerfiles/malware/Mirai
@@ -101,6 +121,10 @@ buildstatus/coap_server_compromised: Dockerfiles/iot/compromised/Dockerfile.coap
 
 clean:
 	rm -f buildstatus/*
+	rm -f Dockerfiles/certificates/Dockerfile
+	rm -f Dockerfiles/DNS/dnsmasq.conf
+	rm -f Dockerfiles/malware/Mirai/Dockerfile_cnc
+	rm -f Dockerfiles/malware/Mirai/Dockerfile_builder
 
 imagerm: clean
 	docker image ls | grep "^iotsim/" | awk '{print $$3}' | xargs docker image rm -f
