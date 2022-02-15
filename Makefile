@@ -18,7 +18,7 @@ all: buildstatus/DNS buildstatus/certificates \
      buildstatus/debug_client
 
 templates: Dockerfiles/certificates/Dockerfile Dockerfiles/DNS/dnsmasq.conf \
-           Dockerfiles/malware/Mirai/Dockerfile_cnc Dockerfiles/malware/Mirai/Dockerfile_builder
+           Dockerfiles/malware/Mirai/Dockerfile.cnc Dockerfiles/malware/Mirai/Dockerfile.builder
 
 Dockerfiles/certificates/Dockerfile: Dockerfiles/certificates/Dockerfile.template $(CONFIG_FILE)
 	sed 's/!PLACEHOLDER-MQTT_TLS_BROKER_CN!/$(MQTT_TLS_BROKER_CN)/g' $< > $@
@@ -28,15 +28,15 @@ Dockerfiles/DNS/dnsmasq.conf: Dockerfiles/DNS/dnsmasq.conf.template $(CONFIG_FIL
             -e 's/!PLACEHOLDER-MIRAI_CNC_IPADDR!/$(MIRAI_CNC_IPADDR)/g' \
             -e 's/!PLACEHOLDER-MIRAI_REPORT_IPADDR!/$(MIRAI_REPORT_IPADDR)/g' $< > $@
 
-Dockerfiles/malware/Mirai/Dockerfile_cnc: Dockerfiles/malware/Mirai/Dockerfile_cnc.template $(CONFIG_FILE)
+Dockerfiles/malware/Mirai/Dockerfile.cnc: Dockerfiles/malware/Mirai/Dockerfile.cnc.template $(CONFIG_FILE)
 	sed -e 's/!PLACEHOLDER-MIRAI_DB_USERNAME!/$(MIRAI_DB_USERNAME)/g' \
             -e 's/!PLACEHOLDER-MIRAI_DB_PASSWORD!/$(MIRAI_DB_PASSWORD)/g' $< > $@
 
-Dockerfiles/malware/Mirai/Dockerfile_builder: Dockerfiles/malware/Mirai/Dockerfile_builder.template $(CONFIG_FILE)
+Dockerfiles/malware/Mirai/Dockerfile.builder: Dockerfiles/malware/Mirai/Dockerfile.builder.template $(CONFIG_FILE)
 	LAB_DNS_IPADDR_COMMAS=$(shell echo $(LAB_DNS_IPADDR) | tr "." ","); \
 	sed "s/!PLACEHOLDER-LAB_DNS_IPADDR!/$$LAB_DNS_IPADDR_COMMAS/g" $< > $@
 
-Mirai_experimentation: Dockerfiles/malware/Mirai/Dockerfile_experimentation
+Mirai_experimentation: Dockerfiles/malware/Mirai/Dockerfile.experimentation
 	$(BUILD_CMD) --file $< --tag iotsim/mirai-experimentation Dockerfiles/malware/Mirai
 
 buildstatus/DNS: Dockerfiles/DNS/Dockerfile Dockerfiles/DNS/dnsmasq.conf
@@ -51,23 +51,23 @@ buildstatus/Merlin: Dockerfiles/malware/Merlin/Dockerfile $(CONFIG_FILE)
 	$(BUILD_CMD) --build-arg MERLIN_RELEASE_VER=$(MERLIN_RELEASE_VER) --file $< --tag iotsim/merlin-cnc Dockerfiles/malware/Merlin
 	@touch $@
 
-buildstatus/Mirai_builder: Dockerfiles/malware/Mirai/Dockerfile_builder
+buildstatus/Mirai_builder: Dockerfiles/malware/Mirai/Dockerfile.builder
 	$(BUILD_CMD) --file $< --tag iotsim/mirai-builder Dockerfiles/malware/Mirai
 	@touch $@
 
-buildstatus/Mirai_cnc: Dockerfiles/malware/Mirai/Dockerfile_cnc buildstatus/Mirai_builder
+buildstatus/Mirai_cnc: Dockerfiles/malware/Mirai/Dockerfile.cnc buildstatus/Mirai_builder
 	$(BUILD_CMD) --file $< --tag iotsim/mirai-cnc Dockerfiles/malware/Mirai
 	@touch $@
 
-buildstatus/Mirai_bot: Dockerfiles/malware/Mirai/Dockerfile_bot buildstatus/Mirai_builder
+buildstatus/Mirai_bot: Dockerfiles/malware/Mirai/Dockerfile.bot buildstatus/Mirai_builder
 	$(BUILD_CMD) --file $< --tag iotsim/mirai-bot Dockerfiles/malware/Mirai
 	@touch $@
 
-buildstatus/mqtt_broker_1.6: Dockerfiles/iot/mqtt_broker/Dockerfile_1.6
+buildstatus/mqtt_broker_1.6: Dockerfiles/iot/mqtt_broker/Dockerfile.1.6
 	$(BUILD_CMD) --file $< --tag iotsim/mqtt-broker-1.6 Dockerfiles/iot/mqtt_broker
 	@touch $@
 
-buildstatus/mqtt_broker_tls: Dockerfiles/iot/mqtt_broker/Dockerfile_tls Dockerfiles/iot/mqtt_broker/mosquitto_tls.conf buildstatus/certificates
+buildstatus/mqtt_broker_tls: Dockerfiles/iot/mqtt_broker/Dockerfile.tls Dockerfiles/iot/mqtt_broker/mosquitto_tls.conf buildstatus/certificates
 	$(BUILD_CMD) --file $< --tag iotsim/mqtt-broker-tls Dockerfiles/iot/mqtt_broker
 	@touch $@
 
@@ -107,8 +107,8 @@ clean:
 	rm -f buildstatus/*
 	rm -f Dockerfiles/certificates/Dockerfile
 	rm -f Dockerfiles/DNS/dnsmasq.conf
-	rm -f Dockerfiles/malware/Mirai/Dockerfile_cnc
-	rm -f Dockerfiles/malware/Mirai/Dockerfile_builder
+	rm -f Dockerfiles/malware/Mirai/Dockerfile.cnc
+	rm -f Dockerfiles/malware/Mirai/Dockerfile.builder
 
 imagerm: clean
 	docker image ls | grep "^iotsim/" | awk '{print $$3}' | xargs docker image rm -f
