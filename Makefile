@@ -14,6 +14,7 @@ all: buildstatus/DNS buildstatus/certificates \
      buildstatus/mqtt_broker_1.6 buildstatus/mqtt_broker_tls \
      buildstatus/mqtt_client_t1 buildstatus/mqtt_client_t2 \
      buildstatus/coap_server buildstatus/coap_cloud \
+     buildstatus/ip_camera buildstatus/stream_server buildstatus/stream_consumer \
      buildstatus/mqtt_client_t1_compromised buildstatus/mqtt_client_t2_compromised buildstatus/coap_server_compromised \
      buildstatus/debug_client
 
@@ -85,6 +86,18 @@ buildstatus/coap_server: Dockerfiles/iot/coap_server/Dockerfile Dockerfiles/iot/
 
 buildstatus/coap_cloud: Dockerfiles/iot/coap_cloud/Dockerfile Dockerfiles/iot/coap_cloud/coap-client-mod.c Dockerfiles/iot/coap_cloud/coap_cloud.py
 	$(BUILD_CMD) --file $< --tag iotsim/coap-cloud Dockerfiles/iot/coap_cloud
+	@touch $@
+
+buildstatus/ip_camera: Dockerfiles/iot/ip_camera/Dockerfile Dockerfiles/iot/ip_camera/video.mp4
+	$(BUILD_CMD) --file $< --tag iotsim/ip-camera Dockerfiles/iot/ip_camera
+	@touch $@
+
+buildstatus/stream_server: Dockerfiles/iot/stream_server/Dockerfile Dockerfiles/iot/stream_server/rtsp-simple-server.yml
+	$(BUILD_CMD) --file $< --tag iotsim/stream-server Dockerfiles/iot/stream_server
+	@touch $@
+
+buildstatus/stream_consumer: Dockerfiles/iot/stream_consumer/Dockerfile
+	$(BUILD_CMD) --file $< --tag iotsim/stream-consumer Dockerfiles/iot/stream_consumer
 	@touch $@
 
 buildstatus/debug_client: Dockerfiles/iot/debug_client/Dockerfile
