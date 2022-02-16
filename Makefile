@@ -88,7 +88,7 @@ buildstatus/coap_cloud: Dockerfiles/iot/coap_cloud/Dockerfile Dockerfiles/iot/co
 	$(BUILD_CMD) --file $< --tag iotsim/coap-cloud Dockerfiles/iot/coap_cloud
 	@touch $@
 
-buildstatus/ip_camera: Dockerfiles/iot/ip_camera/Dockerfile Dockerfiles/iot/ip_camera/video.mp4
+buildstatus/ip_camera: Dockerfiles/iot/ip_camera/Dockerfile.720_15fps_noaudio Dockerfiles/iot/ip_camera/video.mp4
 	$(BUILD_CMD) --file $< --tag iotsim/ip-camera Dockerfiles/iot/ip_camera
 	@touch $@
 
