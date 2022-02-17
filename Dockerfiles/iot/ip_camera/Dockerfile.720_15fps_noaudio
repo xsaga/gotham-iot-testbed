@@ -1,7 +1,9 @@
 FROM alpine
 
-RUN apk add ffmpeg
+RUN apk add ffmpeg python3
 COPY video.mp4 /original.mp4
+COPY ip_camera.py /ip_camera.py
+RUN chmod +x /ip_camera.py
 
 # ffmpeg
 # -an      : remove audio
@@ -13,5 +15,5 @@ RUN ffmpeg -i /original.mp4 -an -r 15 -s:v 1280x720 -codec:v libx265 /video.mp4 
     ffprobe /video.mp4 &&\
     ls -lh /video.mp4
 
-ENTRYPOINT [ "/bin/sh" ]
+ENTRYPOINT [ "/ip_camera.py" ]
 
