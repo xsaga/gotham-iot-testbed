@@ -14,7 +14,7 @@ all: buildstatus/DNS buildstatus/certificates \
      buildstatus/mqtt_broker_1.6 buildstatus/mqtt_broker_tls \
      buildstatus/mqtt_client_t1 buildstatus/mqtt_client_t2 \
      buildstatus/coap_server buildstatus/coap_cloud \
-     buildstatus/ip_camera buildstatus/stream_server buildstatus/stream_consumer \
+     buildstatus/ip_camera_street buildstatus/ip_camera_museum buildstatus/stream_server buildstatus/stream_consumer \
      buildstatus/mqtt_client_t1_compromised buildstatus/mqtt_client_t2_compromised buildstatus/coap_server_compromised \
      buildstatus/debug_client
 
@@ -88,8 +88,12 @@ buildstatus/coap_cloud: Dockerfiles/iot/coap_cloud/Dockerfile Dockerfiles/iot/co
 	$(BUILD_CMD) --file $< --tag iotsim/coap-cloud Dockerfiles/iot/coap_cloud
 	@touch $@
 
-buildstatus/ip_camera: Dockerfiles/iot/ip_camera/Dockerfile.720_15fps_noaudio Dockerfiles/iot/ip_camera/video.mp4
-	$(BUILD_CMD) --file $< --tag iotsim/ip-camera Dockerfiles/iot/ip_camera
+buildstatus/ip_camera_street: Dockerfiles/iot/ip_camera/Dockerfile.720_15fps_noaudio Dockerfiles/iot/ip_camera/street_london_rainy_night.mp4
+	$(BUILD_CMD) --file $< --tag iotsim/ip-camera-street Dockerfiles/iot/ip_camera
+	@touch $@
+
+buildstatus/ip_camera_museum: Dockerfiles/iot/ip_camera/Dockerfile.720_grayscale_25fps_noaudio Dockerfiles/iot/ip_camera/museum_lebanon.mp4
+	$(BUILD_CMD) --file $< --tag iotsim/ip-camera-museum Dockerfiles/iot/ip_camera
 	@touch $@
 
 buildstatus/stream_server: Dockerfiles/iot/stream_server/Dockerfile Dockerfiles/iot/stream_server/rtsp-simple-server.yml

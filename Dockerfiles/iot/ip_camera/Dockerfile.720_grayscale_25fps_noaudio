@@ -1,0 +1,19 @@
+FROM alpine
+
+RUN apk add ffmpeg python3
+COPY museum_lebanon.mp4 /original.mp4
+COPY ip_camera.py /ip_camera.py
+RUN chmod +x /ip_camera.py
+
+# ffmpeg
+# -an      : remove audio
+# -r       : set frame rate in fps
+# -s:v     : set video frame size wxh
+# -filter:v "hue=s=0" : grayscale
+# -codec:v : video format
+RUN ffmpeg -i /original.mp4 -an -r 25 -s:v 1280x720 -filter:v "hue=s=0" -codec:v libx264 /video.mp4 &&\
+    rm -f /original.mp4 &&\
+    ffprobe /video.mp4 &&\
+    ls -lh /video.mp4
+
+ENTRYPOINT [ "/ip_camera.py" ]
