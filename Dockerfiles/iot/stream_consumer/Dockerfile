@@ -1,6 +1,6 @@
 FROM alpine
 
-RUN apk add ffmpeg python3
+RUN apk add --no-cache ffmpeg python3
 
 COPY consume.py /consume.py
 RUN chmod +x /consume.py

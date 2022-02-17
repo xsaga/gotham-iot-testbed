@@ -1,6 +1,6 @@
 FROM alpine
 
-RUN apk add ffmpeg python3
+RUN apk add --no-cache ffmpeg python3
 COPY street_london_rainy_night.mp4 /original.mp4
 COPY ip_camera.py /ip_camera.py
 RUN chmod +x /ip_camera.py
