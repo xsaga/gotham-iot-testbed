@@ -14,6 +14,7 @@ all: buildstatus/DNS buildstatus/certificates \
      buildstatus/mqtt_broker_1.6 buildstatus/mqtt_broker_tls \
      buildstatus/mqtt_client_t1 buildstatus/mqtt_client_t2 \
      buildstatus/coap_server buildstatus/coap_cloud buildstatus/city_power buildstatus/city_power_tls \
+     buildstatus/city_power_cloud \
      buildstatus/ip_camera_street buildstatus/ip_camera_museum buildstatus/stream_server buildstatus/stream_consumer \
      buildstatus/mqtt_client_t1_compromised buildstatus/mqtt_client_t2_compromised buildstatus/coap_server_compromised \
      buildstatus/debug_client
@@ -94,6 +95,10 @@ buildstatus/city_power: Dockerfiles/iot/city_power/Dockerfile Dockerfiles/iot/ci
 
 buildstatus/city_power_tls: Dockerfiles/iot/city_power/Dockerfile.tls buildstatus/certificates buildstatus/city_power
 	$(BUILD_CMD) --file $< --tag iotsim/city-power-tls Dockerfiles/iot/city_power
+	@touch $@
+
+buildstatus/city_power_cloud: Dockerfiles/iot/city_power_cloud/Dockerfile Dockerfiles/iot/city_power_cloud/coap-client-mod.c Dockerfiles/iot/city_power_cloud/coap_cloud.py buildstatus/certificates
+	$(BUILD_CMD) --file $< --tag iotsim/city-power-cloud Dockerfiles/iot/city_power_cloud
 	@touch $@
 
 buildstatus/ip_camera_street: Dockerfiles/iot/ip_camera/Dockerfile.720_15fps_noaudio Dockerfiles/iot/ip_camera/street_london_rainy_night.mp4
