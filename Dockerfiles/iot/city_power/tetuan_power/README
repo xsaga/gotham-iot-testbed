@@ -1,0 +1,22 @@
+Source:
+Abdulwahed Salam, Abdelaaziz El Hibaoui
+Faculty of Sciences
+Tetouan, Morocco
+Abdelmalek Essaadi University
+Sallam.ye '@' yahoo.com, hibaoui '@' uae.ma
+
+https://archive.ics.uci.edu/ml/datasets/Power+consumption+of+Tetouan+city
+
+Field separator ","
+Decimal separator "."
+
+DateTime			string	M/D/YYYY H:MM each 10 minutes
+Temperature			float
+Humidity			float
+Wind Speed			float
+general diffuse flows		float
+diffuse flows			float
+Zone 1 Power Consumption	float	kWh
+Zone 2 Power Consumption	float	kWh
+Zone 3 Power Consumption	float	kWh
+
