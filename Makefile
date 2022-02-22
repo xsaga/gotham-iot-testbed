@@ -13,6 +13,7 @@ all: buildstatus/DNS buildstatus/certificates \
      buildstatus/Merlin buildstatus/Mirai_builder buildstatus/Mirai_cnc buildstatus/Mirai_bot \
      buildstatus/mqtt_broker_1.6 buildstatus/mqtt_broker_tls \
      buildstatus/mqtt_client_t1 buildstatus/mqtt_client_t2 \
+     buildstatus/air_quality \
      buildstatus/coap_server buildstatus/coap_cloud buildstatus/city_power buildstatus/city_power_tls \
      buildstatus/city_power_cloud \
      buildstatus/ip_camera_street buildstatus/ip_camera_museum buildstatus/stream_server buildstatus/stream_consumer \
@@ -79,6 +80,10 @@ buildstatus/mqtt_client_t1: Dockerfiles/iot/mqtt_client_t1/Dockerfile Dockerfile
 
 buildstatus/mqtt_client_t2: Dockerfiles/iot/mqtt_client_t2/Dockerfile Dockerfiles/iot/mqtt_client_t2/client.py
 	$(BUILD_CMD) --file $< --tag iotsim/mqtt-client-t2 Dockerfiles/iot/mqtt_client_t2
+	@touch $@
+
+buildstatus/air_quality: Dockerfiles/iot/air_quality/Dockerfile Dockerfiles/iot/air_quality/client.py Dockerfiles/iot/air_quality/air_quality/AirQualityUCI.csv.xz
+	$(BUILD_CMD) --file $< --tag iotsim/air-quality Dockerfiles/iot/air_quality
 	@touch $@
 
 buildstatus/coap_server: Dockerfiles/iot/coap_server/Dockerfile Dockerfiles/iot/coap_server/coap-server-mod.c
