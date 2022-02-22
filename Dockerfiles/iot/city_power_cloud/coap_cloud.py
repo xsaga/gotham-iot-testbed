@@ -62,7 +62,7 @@ def coap_ping(sleep_t, sleep_t_sd, die_event, client_list, coap_bin):
                 allok = False
 
             if allok:
-                print("OK.")
+                print("...OK.")
 
         sleep_time = random.gauss(sleep_t, sleep_t_sd)
         sleep_time = sleep_t if sleep_time < 0 else sleep_time
@@ -171,7 +171,7 @@ if __name__ == "__main__":
               "ACTIVE_TIME": 60,
               "INACTIVE_TIME": 0}
 
-    psk_file = "/psk.txt"
+    psk_file = "/opt/psk.txt"
 
     for key in config.keys():
         try:

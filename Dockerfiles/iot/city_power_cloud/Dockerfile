@@ -19,6 +19,7 @@ RUN ./autogen.sh &&\
 FROM ubuntu:focal
 
 RUN apt update && apt install -y --no-install-recommends \
+    iputils-ping \
     python3 \
     && rm -rf /var/lib/apt/lists/*
 
