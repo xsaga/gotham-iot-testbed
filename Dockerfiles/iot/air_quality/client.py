@@ -238,6 +238,7 @@ if __name__ == "__main__":
             pass
 
     config["MQTT_TOPIC_PUB"] = f"{config['MQTT_TOPIC_PUB']}/sensor-{socket.gethostname()}"
+    config["MQTT_QOS"] = int(config["MQTT_QOS"])
     print(f"[  setup  ] selected MQTT topic: {config['MQTT_TOPIC_PUB']}")
 
     config["ping_bin"] = shutil.which("ping")
