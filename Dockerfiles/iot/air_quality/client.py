@@ -96,7 +96,7 @@ def broker_ping(sleep_t, sleep_t_sd, die_event, broker_addr, ping_bin):
     print("[  ping   ] killing thread")
 
 
-def telemetry(sleep_t, sleep_t_sd, event, die_event, mqtt_topic, broker_addr, mqtt_qos):
+def telemetry(sleep_t, sleep_t_sd, event, die_event, mqtt_topic, broker_addr, mqtt_qos, mqtt_tls, mqtt_cacert, mqtt_tls_insecure):
     """Periodically send sensor data to the MQTT broker."""
     print("[telemetry] starting thread")
     dataset_fname = "/AirQualityUCI.csv.xz"
@@ -154,7 +154,13 @@ def telemetry(sleep_t, sleep_t_sd, event, die_event, mqtt_topic, broker_addr, mq
 
             print(f"[telemetry] sending to `{broker_addr}' topic: `{mqtt_topic}'; payload: `{payload}'")
             # publish a single message to the broker and disconnect cleanly.
-            publish.single(topic=mqtt_topic, payload=payload, qos=mqtt_qos, hostname=broker_addr)
+            if mqtt_tls:
+                tls_arg = {"ca_certs": mqtt_cacert, "insecure": mqtt_tls_insecure}
+                port = 8883
+            else:
+                tls_arg = None
+                port = 1883
+            publish.single(topic=mqtt_topic, payload=payload, qos=mqtt_qos, hostname=broker_addr, port=port, tls=tls_arg)
 
             sleep_time = random.gauss(sleep_t, sleep_t_sd)
             sleep_time = sleep_t if sleep_time < 0 else sleep_time
@@ -174,7 +180,11 @@ def main(conf):
 
     telemetry_thread = threading.Thread(target=telemetry,
                                         name="telemetry",
-                                        args=(conf["SLEEP_TIME"], conf["SLEEP_TIME_SD"], event, die_event, conf["MQTT_TOPIC_PUB"], conf["MQTT_BROKER_ADDR"], conf["MQTT_QOS"]),
+                                        args=(conf["SLEEP_TIME"],
+                                              conf["SLEEP_TIME_SD"],
+                                              event, die_event,
+                                              conf["MQTT_TOPIC_PUB"], conf["MQTT_BROKER_ADDR"], conf["MQTT_QOS"],
+                                              conf["TLS"], config["ca_cert_file"], config["tls_insecure"]),
                                         kwargs={})
     broker_ping_thread = threading.Thread(target=broker_ping,
                                             name="broker_ping",
@@ -204,6 +214,7 @@ if __name__ == "__main__":
     config = {"MQTT_BROKER_ADDR": "localhost",
               "MQTT_TOPIC_PUB": "city/air",
               "MQTT_QOS": 0,
+              "TLS": "",
               "SLEEP_TIME": 1,  # 5
               "SLEEP_TIME_SD": 0.5,
               "PING_SLEEP_TIME": 10,
@@ -226,5 +237,20 @@ if __name__ == "__main__":
 
     if not ping(config["ping_bin"], config["MQTT_BROKER_ADDR"]):
         sys.exit(f"[  setup  ] {config['MQTT_BROKER_ADDR']} is down")
+
+    if config["TLS"]:
+        config["TLS"] = True
+        config["ca_cert_file"] = "/iot-sim-ca.crt"
+        # Communications are encrypted but the server hostname verification is disabled
+        # TODO include option for TLS insecure = False (using the DNS set in the configuration file to get the address of the broker)
+        config["tls_insecure"] = True
+        if not os.path.isfile(config["ca_cert_file"]):
+            sys.exit(f"[  setup  ] TLS enabled but ca cert file `{config['ca_cert_file']}' does not exist. Exiting.")
+    else:
+        config["TLS"] = False
+        config["ca_cert_file"] = None
+        config["tls_insecure"] = None
+
+    print(f"[  setup  ] TLS enabled: {config['TLS']}, ca cert: {config['ca_cert_file']}, TLS insecure: {config['tls_insecure']}")
 
     main(config)

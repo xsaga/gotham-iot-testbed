@@ -82,7 +82,7 @@ buildstatus/mqtt_client_t2: Dockerfiles/iot/mqtt_client_t2/Dockerfile Dockerfile
 	$(BUILD_CMD) --file $< --tag iotsim/mqtt-client-t2 Dockerfiles/iot/mqtt_client_t2
 	@touch $@
 
-buildstatus/air_quality: Dockerfiles/iot/air_quality/Dockerfile Dockerfiles/iot/air_quality/client.py Dockerfiles/iot/air_quality/air_quality/AirQualityUCI.csv.xz
+buildstatus/air_quality: Dockerfiles/iot/air_quality/Dockerfile Dockerfiles/iot/air_quality/client.py Dockerfiles/iot/air_quality/air_quality/AirQualityUCI.csv.xz buildstatus/certificates
 	$(BUILD_CMD) --file $< --tag iotsim/air-quality Dockerfiles/iot/air_quality
 	@touch $@
 

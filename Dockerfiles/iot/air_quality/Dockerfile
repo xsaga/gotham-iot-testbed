@@ -9,6 +9,7 @@ RUN apt update && apt install -y --no-install-recommends \
 RUN pip3 install --no-cache-dir paho-mqtt
 
 COPY air_quality/AirQualityUCI.csv.xz /AirQualityUCI.csv.xz
+COPY --from=iotsim/certificates:latest /artifacts/pki/iot-sim-ca.crt /iot-sim-ca.crt
 
 COPY client.py /client.py
 RUN chmod +x /client.py
