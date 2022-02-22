@@ -96,7 +96,7 @@ def broker_ping(sleep_t, sleep_t_sd, die_event, broker_addr, ping_bin):
     print("[  ping   ] killing thread")
 
 
-def telemetry(sleep_t, sleep_t_sd, event, die_event, mqtt_topic, broker_addr):
+def telemetry(sleep_t, sleep_t_sd, event, die_event, mqtt_topic, broker_addr, mqtt_qos):
     """Periodically send sensor data to the MQTT broker."""
     print("[telemetry] starting thread")
     dataset_fname = "/AirQualityUCI.csv.xz"
@@ -153,7 +153,8 @@ def telemetry(sleep_t, sleep_t_sd, event, die_event, mqtt_topic, broker_addr):
             payload = as_xml(data_dict)
 
             print(f"[telemetry] sending to `{broker_addr}' topic: `{mqtt_topic}'; payload: `{payload}'")
-            publish.single(topic=mqtt_topic, payload=payload, hostname=broker_addr)
+            # publish a single message to the broker and disconnect cleanly.
+            publish.single(topic=mqtt_topic, payload=payload, qos=mqtt_qos, hostname=broker_addr)
 
             sleep_time = random.gauss(sleep_t, sleep_t_sd)
             sleep_time = sleep_t if sleep_time < 0 else sleep_time
@@ -173,7 +174,7 @@ def main(conf):
 
     telemetry_thread = threading.Thread(target=telemetry,
                                         name="telemetry",
-                                        args=(conf["SLEEP_TIME"], conf["SLEEP_TIME_SD"], event, die_event, conf["MQTT_TOPIC_PUB"], conf["MQTT_BROKER_ADDR"]),
+                                        args=(conf["SLEEP_TIME"], conf["SLEEP_TIME_SD"], event, die_event, conf["MQTT_TOPIC_PUB"], conf["MQTT_BROKER_ADDR"], conf["MQTT_QOS"]),
                                         kwargs={})
     broker_ping_thread = threading.Thread(target=broker_ping,
                                             name="broker_ping",
@@ -202,6 +203,7 @@ def main(conf):
 if __name__ == "__main__":
     config = {"MQTT_BROKER_ADDR": "localhost",
               "MQTT_TOPIC_PUB": "city/air",
+              "MQTT_QOS": 0,
               "SLEEP_TIME": 1,  # 5
               "SLEEP_TIME_SD": 0.5,
               "PING_SLEEP_TIME": 10,
