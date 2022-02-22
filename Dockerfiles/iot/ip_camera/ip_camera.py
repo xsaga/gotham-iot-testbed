@@ -33,7 +33,7 @@ if not ping_bin:
     sys.exit("No 'ping' binary found. Exiting.")
 
 if not ping(ping_bin, config["STREAM_SERVER_ADDR"]):
-    sys.exit(f"config['STREAM_SERVER_ADDR'] is down")
+    sys.exit(f"{config['STREAM_SERVER_ADDR']} is down")
 
 stream_cmd = ["ffmpeg",
               "-re",
