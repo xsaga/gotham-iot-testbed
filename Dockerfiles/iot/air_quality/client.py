@@ -224,10 +224,10 @@ if __name__ == "__main__":
               "MQTT_TOPIC_PUB": "city/air",
               "MQTT_QOS": 0,
               "TLS": "",
-              "SLEEP_TIME": 1,  # 5
-              "SLEEP_TIME_SD": 0.5,
-              "PING_SLEEP_TIME": 10,
-              "PING_SLEEP_TIME_SD": 0.1,
+              "SLEEP_TIME": 600,
+              "SLEEP_TIME_SD": 10,
+              "PING_SLEEP_TIME": 60,
+              "PING_SLEEP_TIME_SD": 1,
               "ACTIVE_TIME": 60,
               "INACTIVE_TIME": 0}
 
