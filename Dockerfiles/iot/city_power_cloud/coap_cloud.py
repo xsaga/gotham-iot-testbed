@@ -123,7 +123,7 @@ def telemetry(sleep_t, sleep_t_sd, event, die_event, client_list, coap_bin, psk)
             print(f"[requests] sleeping for {sleep_time}s")
             time.sleep(sleep_time)
         else:
-            print(f"[requests] ZzZZzzZ sleeping... ZZzZzzZ")
+            print("[requests] ZzZZzzZ sleeping... ZZzZzzZ")
             event.wait(timeout=1)
     print("[requests] killing thread")
 
