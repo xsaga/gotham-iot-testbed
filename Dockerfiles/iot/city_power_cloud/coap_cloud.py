@@ -15,6 +15,7 @@ from typing import List
 
 
 def iprange(start_addr: str, end_addr: str = None) -> List[ipaddress.IPv4Address]:
+    """Return a list of IPv4 addresses between two addresses, or itself if end_addr is None."""
     if not end_addr:
         return [ipaddress.IPv4Address(start_addr)]
     start = int(ipaddress.IPv4Address(start_addr))
@@ -27,11 +28,13 @@ def iprange(start_addr: str, end_addr: str = None) -> List[ipaddress.IPv4Address
 
 
 def signal_handler(signum, stackframe, event):
+    """Set the event flag to signal all threads to terminate."""
     print(f"Handling signal {signum}")
     event.set()
 
 
 def ping(bin_path, destination, attempts=3, wait=10):
+    """Check if destination responds to ICMP echo requests."""
     for i in range(attempts):
         result = subprocess.run([bin_path, "-c1", destination], capture_output=False, check=False)
         if result.returncode == 0 or i==attempts-1:
@@ -40,7 +43,8 @@ def ping(bin_path, destination, attempts=3, wait=10):
     return result.returncode == 0
 
 
-def coap_ping(sleep_t, die_event, client_list, coap_bin):
+def coap_ping(sleep_t, sleep_t_sd, die_event, client_list, coap_bin):
+    """Periodically send a coap '.well-known/core' request to a list of clients (coap servers)."""
     while not die_event.is_set():
         for client in client_list:
             resource = f"coap://{client}/.well-known/core"
@@ -60,11 +64,15 @@ def coap_ping(sleep_t, die_event, client_list, coap_bin):
             if allok:
                 print("OK.")
 
-        time.sleep(sleep_t)
+        sleep_time = random.gauss(sleep_t, sleep_t_sd)
+        sleep_time = sleep_t if sleep_time < 0 else sleep_time
+        print(f"[  core  ] sleeping for {sleep_time}s")
+        time.sleep(sleep_time)
     print("[  core  ] killing thread")
 
 
-def telemetry(sleep_t, event, die_event, client_list, coap_bin, psk):
+def telemetry(sleep_t, sleep_t_sd, event, die_event, client_list, coap_bin, psk):
+    """Periodically send a series of coap requests to a list of clients (coap servers)."""
     print("[requests] starting thread")
 
     if psk:
@@ -78,7 +86,9 @@ def telemetry(sleep_t, event, die_event, client_list, coap_bin, psk):
         if event.is_set():
             for client in client_list:
                 rcv_payload = {}
-                resource_list = ["time"]
+                resource_list = ["datetime", "temperature", "humidity",
+                                 "windspeed", "generaldiffuseflows", "diffuseflows",
+                                 "zone1power", "zone2power", "zone3power"]
                 for resource in resource_list:
                     uri = f"{coap_scheme}://{client}/{resource}"
                     cmd = f"{coap_bin} {coap_identity} -m GET {uri}"
@@ -104,27 +114,33 @@ def telemetry(sleep_t, event, die_event, client_list, coap_bin, psk):
                         else:
                             print(f"...{cmd_stderr}")
 
+                    time.sleep(0.5)
+
                 print(f"[requests] received payload from {client} = {rcv_payload}")
-            time.sleep(sleep_t)
+
+            sleep_time = random.gauss(sleep_t, sleep_t_sd)
+            sleep_time = sleep_t if sleep_time < 0 else sleep_time
+            print(f"[requests] sleeping for {sleep_time}s")
+            time.sleep(sleep_time)
         else:
-            print(f"[requests] ZzZZzzZ sleeping... ZZzZzzZ event")
+            print(f"[requests] ZzZZzzZ sleeping... ZZzZzzZ")
             event.wait(timeout=1)
     print("[requests] killing thread")
 
 
 def main(conf):
+    """Manages the other threads."""
     event = threading.Event()
     die_event = threading.Event()
     signal.signal(signal.SIGTERM, lambda a,b:signal_handler(a, b, die_event))
 
-    # TODO add sleep noise
     telemetry_thread = threading.Thread(target=telemetry,
                                         name="telemetry",
-                                        args=(conf["SLEEP_TIME"], event, die_event, conf["COAP_ADDR_LIST"], conf["coap_bin"], conf["PSK"]),
+                                        args=(conf["SLEEP_TIME"], conf["SLEEP_TIME_SD"], event, die_event, conf["COAP_ADDR_LIST"], conf["coap_bin"], conf["PSK"]),
                                         kwargs={})
     ping_thread = threading.Thread(target=coap_ping,
                                    name="coap ping",
-                                   args=(conf["PING_SLEEP_TIME"],die_event, conf["COAP_ADDR_LIST"], conf["coap_bin"]),
+                                   args=(conf["PING_SLEEP_TIME"], conf["PING_SLEEP_TIME_SD"], die_event, conf["COAP_ADDR_LIST"], conf["coap_bin"]),
                                    kwargs={}, daemon=False)
 
     die_event.clear()
@@ -148,12 +164,12 @@ def main(conf):
 if __name__ == "__main__":
     config = {"COAP_ADDR_LIST": "",
               "PSK": "",
-              "SLEEP_TIME": 1,
-              "SLEEP_TIME_SD": 0.1,
-              "PING_SLEEP_TIME": 10,
-              "PING_SLEEP_TIME_SD": 0.1,
-              "ACTIVE_TIME": 30,
-              "INACTIVE_TIME": 10}
+              "SLEEP_TIME": 300,
+              "SLEEP_TIME_SD": 10,
+              "PING_SLEEP_TIME": 600,
+              "PING_SLEEP_TIME_SD": 10,
+              "ACTIVE_TIME": 60,
+              "INACTIVE_TIME": 0}
 
     psk_file = "/psk.txt"
 
@@ -164,10 +180,10 @@ if __name__ == "__main__":
             pass
 
     if not config["COAP_ADDR_LIST"]:
-        sys.exit("COAP_ADDR_LIST is empty. Exiting.")
+        sys.exit("[ set up ] COAP_ADDR_LIST is empty. Exiting.")
 
     address_list = []
-    # config["COAP_ADDR_LIST"] example: "192.168.10.1-192.168.10.50;192.168.20.2-192.168.20.2;192.168.30.0"
+    # config["COAP_ADDR_LIST"] example: "192.168.10.1-192.168.10.50;192.168.20.2"
     for ip_range in list(map(str.strip, config["COAP_ADDR_LIST"].split(";"))):
         if ip_range:
             address_list.extend(iprange(*list(map(str.strip, ip_range.split("-")))))
@@ -175,11 +191,11 @@ if __name__ == "__main__":
 
     config["ping_bin"] = shutil.which("ping")
     if not config["ping_bin"]:
-        sys.exit("No 'ping' binary found. Exiting.")
+        sys.exit("[ set up ] No 'ping' binary found. Exiting.")
 
     config["coap_bin"] = shutil.which("coap-client", path=os.environ["PATH"]+":/opt")
     if not config["coap_bin"]:
-        sys.exit("No 'coap-client' binary found. Exiting.")
+        sys.exit("[ set up ] No 'coap-client' binary found. Exiting.")
 
     for ip_addr in config["COAP_ADDR_LIST"]:
         print(f"[ set up ] pinging {ip_addr}")
@@ -187,16 +203,16 @@ if __name__ == "__main__":
             sys.exit(f"[ set up ] {ip_addr} is down")
 
     if config["PSK"]:
-        print("With pre-shared key")
+        print("[ set up ] With pre-shared key")
         try:
             with open(psk_file, "r") as f:
                 config["PSK"] = f.read().strip()
         except FileNotFoundError:
-            print(f"Error opening {psk_file}")
+            print(f"[ set up ] Error opening {psk_file}")
             config["PSK"] = None
-        print(f"Pre-shared key is: `{config['PSK']}'")
+        print(f"[ set up ] Pre-shared key is: `{config['PSK']}'")
     else:
-        print("NO pre-shared key")
+        print("[ set up ] NO pre-shared key")
         config["PSK"] = None
 
     main(config)
