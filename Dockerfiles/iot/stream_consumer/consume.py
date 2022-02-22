@@ -8,6 +8,7 @@ import time
 
 
 def ping(bin_path, destination, attempts=3, wait=10):
+    """Check if destination responds to ICMP echo requests."""
     for i in range(attempts):
         result = subprocess.run([bin_path, "-c1", destination], capture_output=False, check=False)
         if result.returncode == 0 or i==attempts-1:
