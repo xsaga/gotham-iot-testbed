@@ -6,6 +6,7 @@ import random
 import shutil
 import signal
 import socket
+import ssl
 import subprocess
 import sys
 import threading
@@ -160,7 +161,15 @@ def telemetry(sleep_t, sleep_t_sd, event, die_event, mqtt_topic, broker_addr, mq
             else:
                 tls_arg = None
                 port = 1883
-            publish.single(topic=mqtt_topic, payload=payload, qos=mqtt_qos, hostname=broker_addr, port=port, tls=tls_arg)
+
+            try:
+                publish.single(topic=mqtt_topic, payload=payload, qos=mqtt_qos, hostname=broker_addr, port=port, tls=tls_arg)
+            except ConnectionRefusedError as e:
+                print(f"[telemetry] {e}")
+                die_event.set()
+            except ssl.SSLError as e:
+                print(f"[telemetry] {e}")
+                die_event.set()
 
             sleep_time = random.gauss(sleep_t, sleep_t_sd)
             sleep_time = sleep_t if sleep_time < 0 else sleep_time
