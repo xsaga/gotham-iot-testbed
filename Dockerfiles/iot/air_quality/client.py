@@ -145,6 +145,13 @@ def telemetry(sleep_t, sleep_t_sd, event, die_event, mqtt_topic, broker_addr, mq
     data_iter = readloop(dataset_fname, lzma.open)
     print(f"[telemetry] opened `{dataset_fname}'")
 
+    if mqtt_tls:
+        tls_arg = {"ca_certs": mqtt_cacert, "insecure": mqtt_tls_insecure}
+        port = 8883
+    else:
+        tls_arg = None
+        port = 1883
+
     while not die_event.is_set():
         if event.is_set():
             data_line = next(data_iter).strip().split(dataset_fieldseparator)
@@ -155,12 +162,6 @@ def telemetry(sleep_t, sleep_t_sd, event, die_event, mqtt_topic, broker_addr, mq
 
             print(f"[telemetry] sending to `{broker_addr}' topic: `{mqtt_topic}'; payload: `{payload}'")
             # publish a single message to the broker and disconnect cleanly.
-            if mqtt_tls:
-                tls_arg = {"ca_certs": mqtt_cacert, "insecure": mqtt_tls_insecure}
-                port = 8883
-            else:
-                tls_arg = None
-                port = 1883
 
             try:
                 publish.single(topic=mqtt_topic, payload=payload, qos=mqtt_qos, hostname=broker_addr, port=port, tls=tls_arg)
