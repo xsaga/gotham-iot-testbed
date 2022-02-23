@@ -194,7 +194,7 @@ def main(conf):
                                               conf["SLEEP_TIME_SD"],
                                               event, die_event,
                                               conf["MQTT_TOPIC_PUB"], conf["MQTT_BROKER_ADDR"], conf["MQTT_QOS"],
-                                              conf["TLS"], config["ca_cert_file"], config["tls_insecure"]),
+                                              conf["TLS"], conf["ca_cert_file"], conf["tls_insecure"]),
                                         kwargs={})
     broker_ping_thread = threading.Thread(target=broker_ping,
                                             name="broker_ping",
