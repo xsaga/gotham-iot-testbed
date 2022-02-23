@@ -1,0 +1,62 @@
+Source:
+Gustavo Scalabrini Sampaio
+gustavo.sampaio '@' mackenzista.com.br
+Postgraduate Program in Electrical Engineering and Computing, Mackenzie Presbyterian University, SÃ£o Paulo, Brazil.
+
+Arnaldo Rabello de Aguiar Vallim Filho
+arnaldo.aguiar '@' mackenzie.br
+Computer Science Dept., Mackenzie Presbyterian University, SÃ£o Paulo, Brazil.
+
+Leilton Santos da Silva
+leilton '@' emae.com.br
+EMAEâ€”Metropolitan Company of Water & Energy, SÃ£o Paulo, Brazil.
+
+Leandro Augusto da Silva
+leandroaugusto.silva '@' mackenzie.br
+Postgraduate Program in Electrical Engineering and Computing, Mackenzie Presbyterian University, SÃ£o Paulo, Brazil.
+
+
+Donator:
+
+Gustavo Scalabrini Sampaio
+
+https://archive.ics.uci.edu/ml/datasets/Accelerometer
+
+Data Set Information:
+
+This dataset was generated for use on 'Prediction of Motor Failure
+Time Using An Artificial Neural Network' project (DOI:
+10.3390/s19194342). A cooler fan with weights on its blades was used
+to generate vibrations. To this fan cooler was attached an
+accelerometer to collect the vibration data. With this data, motor
+failure time predictions were made, using an artificial neural
+networks. To generate three distinct vibration scenarios, the weights
+were distributed in three different ways: 1) 'red' - normal
+configuration: two weight pieces positioned on neighboring blades; 2)
+'blue' - perpendicular configuration: two weight pieces positioned on
+blades forming a 90Â° angle; 3) 'green' - opposite configuration: two
+weight pieces positioned on opposite blades. A schematic diagram can
+be seen in figure 3 of the paper.
+
+Devices used: Akasa AK-FN059 12cm Viper cooling fan (Generate the
+vibrations) MMA8452Q accelerometer (Measure vibration)
+
+Data collection method: 17 rotation speeds were set up, ranging from
+20% to 100% of the cooler maximum speed at 5% intervals; for the three
+weight distribution configurations in the cooler blades. Note that the
+Akasa AK-FN059 cooler has 1900 rpm of max rotation speed.
+
+The vibration measurements were collected at a frequency of 20 ms for
+1 min for each percentage, generating 3000 records per speed. Thus, in
+total, 153,000 vibration records were collected from the simulation
+model.
+
+Field separator ","
+Decimal separator "."
+
+wconfid	int	  Weight Configuration ID (1 - 'red' - normal; 2 - 'blue' - perpendicular; 3 - 'green' - opposite)
+pctid	int	  Cooler Fan RPM Speed Percentage ID (20 means 20%, and so on).
+x	float	  Accelerometer x value. g
+y	float	  Accelerometer y value. g
+z	float	  Accelerometer z value. g
+

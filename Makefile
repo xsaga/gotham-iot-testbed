@@ -13,7 +13,7 @@ all: buildstatus/DNS buildstatus/certificates \
      buildstatus/Merlin buildstatus/Mirai_builder buildstatus/Mirai_cnc buildstatus/Mirai_bot \
      buildstatus/mqtt_broker_1.6 buildstatus/mqtt_broker_tls \
      buildstatus/mqtt_client_t1 buildstatus/mqtt_client_t2 \
-     buildstatus/air_quality \
+     buildstatus/air_quality buildstatus/cooler_motor \
      buildstatus/coap_server buildstatus/coap_cloud buildstatus/city_power buildstatus/city_power_tls \
      buildstatus/city_power_cloud \
      buildstatus/ip_camera_street buildstatus/ip_camera_museum buildstatus/stream_server buildstatus/stream_consumer \
@@ -84,6 +84,10 @@ buildstatus/mqtt_client_t2: Dockerfiles/iot/mqtt_client_t2/Dockerfile Dockerfile
 
 buildstatus/air_quality: Dockerfiles/iot/air_quality/Dockerfile Dockerfiles/iot/air_quality/client.py Dockerfiles/iot/air_quality/air_quality/AirQualityUCI.csv.xz buildstatus/certificates
 	$(BUILD_CMD) --file $< --tag iotsim/air-quality Dockerfiles/iot/air_quality
+	@touch $@
+
+buildstatus/cooler_motor: Dockerfiles/iot/cooler_motor/Dockerfile Dockerfiles/iot/cooler_motor/client.py Dockerfiles/iot/cooler_motor/accelerometer/accelerometer.csv.xz buildstatus/certificates
+	$(BUILD_CMD) --file $< --tag iotsim/cooler-motor Dockerfiles/iot/cooler_motor
 	@touch $@
 
 buildstatus/coap_server: Dockerfiles/iot/coap_server/Dockerfile Dockerfiles/iot/coap_server/coap-server-mod.c
