@@ -86,7 +86,7 @@ def broker_ping(sleep_t, sleep_t_sd, die_event, broker_addr, ping_bin):
         sleep_time = random.gauss(sleep_t, sleep_t_sd)
         sleep_time = sleep_t if sleep_time < 0 else sleep_time
         print(f"[  ping   ] sleeping for {sleep_time}s")
-        time.sleep(sleep_time)
+        die_event.wait(timeout=sleep_time)
     print("[  ping   ] killing thread")
 
 
@@ -180,7 +180,7 @@ def telemetry(sleep_t, sleep_t_sd, event, die_event, mqtt_topic, broker_addr, mq
             sleep_time = random.gauss(sleep_t, sleep_t_sd)
             sleep_time = sleep_t if sleep_time < 0 else sleep_time
             print(f"[telemetry] sleeping for {sleep_time}s")
-            time.sleep(sleep_time)
+            die_event.wait(timeout=sleep_time)
         else:
             print("[telemetry] zZzzZZz sleeping... zzZzZZz")
             event.wait(timeout=1)
@@ -212,7 +212,7 @@ def main(conf):
     die_event.clear()
     broker_ping_thread.start()
     telemetry_thread.start()
-    time.sleep(5)
+    die_event.wait(timeout=5)
 
     print("[  main   ] starting loop")
 

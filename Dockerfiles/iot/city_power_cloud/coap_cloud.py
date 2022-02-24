@@ -67,7 +67,7 @@ def coap_ping(sleep_t, sleep_t_sd, die_event, client_list, coap_bin):
         sleep_time = random.gauss(sleep_t, sleep_t_sd)
         sleep_time = sleep_t if sleep_time < 0 else sleep_time
         print(f"[  core  ] sleeping for {sleep_time}s")
-        time.sleep(sleep_time)
+        die_event.wait(timeout=sleep_time)
     print("[  core  ] killing thread")
 
 
@@ -114,14 +114,14 @@ def telemetry(sleep_t, sleep_t_sd, event, die_event, client_list, coap_bin, psk)
                         else:
                             print(f"...{cmd_stderr}")
 
-                    time.sleep(0.5)
+                    die_event.wait(timeout=0.5)
 
                 print(f"[requests] received payload from {client} = {rcv_payload}")
 
             sleep_time = random.gauss(sleep_t, sleep_t_sd)
             sleep_time = sleep_t if sleep_time < 0 else sleep_time
             print(f"[requests] sleeping for {sleep_time}s")
-            time.sleep(sleep_time)
+            die_event.wait(timeout=sleep_time)
         else:
             print("[requests] ZzZZzzZ sleeping... ZZzZzzZ")
             event.wait(timeout=1)
@@ -146,7 +146,7 @@ def main(conf):
     die_event.clear()
     ping_thread.start()
     telemetry_thread.start()
-    time.sleep(5)
+    die_event.wait(timeout=5)
 
     print("[  main  ] starting loop")
 
