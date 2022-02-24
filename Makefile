@@ -16,6 +16,7 @@ all: buildstatus/DNS buildstatus/certificates \
      buildstatus/air_quality buildstatus/cooler_motor buildstatus/predictive_maintenance \
      buildstatus/hydraulic_system \
      buildstatus/coap_server buildstatus/coap_cloud buildstatus/city_power buildstatus/city_power_tls \
+     buildstatus/combined_cycle buildstatus/combined_cycle_tls \
      buildstatus/city_power_cloud \
      buildstatus/ip_camera_street buildstatus/ip_camera_museum buildstatus/stream_server buildstatus/stream_consumer \
      buildstatus/mqtt_client_t1_compromised buildstatus/mqtt_client_t2_compromised buildstatus/coap_server_compromised \
@@ -113,6 +114,14 @@ buildstatus/city_power: Dockerfiles/iot/city_power/Dockerfile Dockerfiles/iot/ci
 
 buildstatus/city_power_tls: Dockerfiles/iot/city_power/Dockerfile.tls buildstatus/certificates buildstatus/city_power
 	$(BUILD_CMD) --file $< --tag iotsim/city-power-tls Dockerfiles/iot/city_power
+	@touch $@
+
+buildstatus/combined_cycle: Dockerfiles/iot/combined_cycle/Dockerfile Dockerfiles/iot/combined_cycle/coap-server-mod.c Dockerfiles/iot/combined_cycle/combined_cycle_power_plant/Fold1_pp.csv.xz
+	$(BUILD_CMD) --file $< --tag iotsim/combined-cycle Dockerfiles/iot/combined_cycle
+	@touch $@
+
+buildstatus/combined_cycle_tls: Dockerfiles/iot/combined_cycle/Dockerfile.tls buildstatus/certificates buildstatus/combined_cycle
+	$(BUILD_CMD) --file $< --tag iotsim/combined-cycle-tls Dockerfiles/iot/combined_cycle
 	@touch $@
 
 buildstatus/city_power_cloud: Dockerfiles/iot/city_power_cloud/Dockerfile Dockerfiles/iot/city_power_cloud/coap-client-mod.c Dockerfiles/iot/city_power_cloud/coap_cloud.py buildstatus/certificates

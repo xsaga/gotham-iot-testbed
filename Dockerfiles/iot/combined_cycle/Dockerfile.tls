@@ -1,0 +1,11 @@
+FROM iotsim/combined-cycle
+
+COPY --from=iotsim/certificates:latest /artifacts/psk/psk.txt /psk.txt
+
+RUN PSK=$(cat /psk.txt) &&\
+    echo "#!/bin/bash" > /init_cmd.sh &&\
+    echo "/opt/coap-server -v 7 -k $PSK -p 5683" >> /init_cmd.sh &&\
+    chmod +x /init_cmd.sh
+
+ENTRYPOINT ["/init_cmd.sh"]
+
