@@ -164,7 +164,6 @@ def telemetry(sleep_t, sleep_t_sd, event, die_event, mqtt_topic, broker_addr, mq
                 payload.append(p)
 
             payload = as_json(payload)
-            print(payload)
 
             print(f"[telemetry] sending to `{broker_addr}' topic: `{mqtt_topic}'; payload: `{payload}'")
 
