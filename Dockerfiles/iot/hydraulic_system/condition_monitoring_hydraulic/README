@@ -1,0 +1,61 @@
+Source:
+Creator: ZeMA gGmbH, Eschberger Weg 46, 66121 SaarbrÃ¼cken
+Contact: t.schneider '@' zema.de, s.klein '@' zema.de, m.bastuck '@' lmt.uni-saarland.de, info '@' lmt.uni-saarland.de
+
+https://archive.ics.uci.edu/ml/datasets/condition+monitoring+of+hydraulic+systems
+
+Data Set Information:
+
+The data set was experimentally obtained with a hydraulic test
+rig. This test rig consists of a primary working and a secondary
+cooling-filtration circuit which are connected via the oil tank [1],
+[2]. The system cyclically repeats constant load cycles (duration 60
+seconds) and measures process values such as pressures, volume flows
+and temperatures while the condition of four hydraulic components
+(cooler, valve, pump and accumulator) is quantitatively varied.
+
+Multiple files, each file:
+Fields separator "\t"
+Decimal separator "."
+
+Each row is a single cycle 60s
+
+Sensor		Physical quantity		Unit		Sampling rate
+PS1		Pressure			bar		100 Hz
+PS2		Pressure			bar		100 Hz
+PS3		Pressure			bar		100 Hz
+PS4		Pressure			bar		100 Hz
+PS5		Pressure			bar		100 Hz
+PS6		Pressure			bar		100 Hz
+EPS1		Motor power			W		100 Hz
+FS1		Volume flow			l/min		10 Hz
+FS2		Volume flow			l/min		10 Hz
+TS1		Temperature			°C		1 Hz
+TS2		Temperature			°C		1 Hz
+TS3		Temperature			°C		1 Hz
+TS4		Temperature			°C		1 Hz
+VS1		Vibration			mm/s		1 Hz
+CE		Cooling efficiency (virtual)	%		1 Hz
+CP		Cooling power (virtual)		kW		1 Hz
+SE		Efficiency factor		%		1 Hz
+
+
+MODIFICATIONS:
+Files with sampling rate > 1Hz have been resampled to 1Hz to save
+space and reduce data volume using:
+
+import numpy as np
+import scipy.signal
+
+def resample(fname):
+    data = np.loadtxt(fname, delimiter="\t")
+    print(data.shape)
+    resampled = np.apply_along_axis(lambda x: scipy.signal.resample(x, 60), 1, data)
+    print(resampled.shape)
+    save_fname = fname.replace(".", "_resampled.")
+    np.savetxt(save_fname, resampled, fmt="%.2f", delimiter="\t")
+
+files = ["PS1.txt", "PS2.txt", "PS3.txt", "PS4.txt", "PS5.txt", "PS6.txt", "EPS1.txt", "FS1.txt", "FS2.txt"]
+
+for f in files:
+    resample(f)
