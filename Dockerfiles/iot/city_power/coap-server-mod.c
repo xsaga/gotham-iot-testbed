@@ -2989,7 +2989,7 @@ main(int argc, char **argv) {
   }
 
   fp_temperature = fopen(DATASETFNAME, "r");
-  if(fp_datetime == NULL){
+  if(fp_temperature == NULL){
     printf("Can't open dataset (temperature).\n");
     return 1;
   } else {
@@ -2997,7 +2997,7 @@ main(int argc, char **argv) {
   }
 
   fp_humidity = fopen(DATASETFNAME, "r");
-  if(fp_datetime == NULL){
+  if(fp_humidity == NULL){
     printf("Can't open dataset (humidity).\n");
     return 1;
   } else {
@@ -3005,7 +3005,7 @@ main(int argc, char **argv) {
   }
 
   fp_windspeed = fopen(DATASETFNAME, "r");
-  if(fp_datetime == NULL){
+  if(fp_windspeed == NULL){
     printf("Can't open dataset (windspeed).\n");
     return 1;
   } else {
@@ -3013,7 +3013,7 @@ main(int argc, char **argv) {
   }
 
   fp_generaldiffuseflows = fopen(DATASETFNAME, "r");
-  if(fp_datetime == NULL){
+  if(fp_generaldiffuseflows == NULL){
     printf("Can't open dataset (generaldiffuseflows).\n");
     return 1;
   } else {
@@ -3021,7 +3021,7 @@ main(int argc, char **argv) {
   }
 
   fp_diffuseflows = fopen(DATASETFNAME, "r");
-  if(fp_datetime == NULL){
+  if(fp_diffuseflows == NULL){
     printf("Can't open dataset (diffuseflows).\n");
     return 1;
   } else {
@@ -3029,7 +3029,7 @@ main(int argc, char **argv) {
   }
 
   fp_zone1power = fopen(DATASETFNAME, "r");
-  if(fp_datetime == NULL){
+  if(fp_zone1power == NULL){
     printf("Can't open dataset (zone1power).\n");
     return 1;
   } else {
@@ -3037,7 +3037,7 @@ main(int argc, char **argv) {
   }
 
   fp_zone2power = fopen(DATASETFNAME, "r");
-  if(fp_datetime == NULL){
+  if(fp_zone2power == NULL){
     printf("Can't open dataset (zone2power).\n");
     return 1;
   } else {
@@ -3045,7 +3045,7 @@ main(int argc, char **argv) {
   }
 
   fp_zone3power = fopen(DATASETFNAME, "r");
-  if(fp_datetime == NULL){
+  if(fp_zone3power == NULL){
     printf("Can't open dataset (zone3power).\n");
     return 1;
   } else {
