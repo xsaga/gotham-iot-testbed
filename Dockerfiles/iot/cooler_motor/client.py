@@ -43,9 +43,9 @@ def readloop(file, openfunc=open, skipfirst=True):
             f.seek(0, 0)
 
 
-def pack_floats(*vals):
-    """Pack a list of floats as doubles."""
-    return struct.pack(f"@{len(vals)}d", *vals)
+def pack_floats(*vals, fmt="d"):
+    """Pack a list of floats as doubles (fmt='d') or floats (fmt='f')."""
+    return struct.pack(f"@{len(vals)}{fmt}", *vals)
 
 
 def signal_handler(signum, stackframe, event):
@@ -124,7 +124,7 @@ def telemetry(sleep_t, sleep_t_sd, event, die_event, mqtt_topic, broker_addr, mq
         if event.is_set():
             data_line = next(data_iter).strip().split(dataset_fieldseparator)
             data_line = list(map(float, data_line))
-            payload = base64.b64encode(pack_floats(*data_line))
+            payload = base64.b64encode(pack_floats(*data_line, fmt="d"))
 
             print(f"[telemetry] sending to `{broker_addr}' topic: `{mqtt_topic}'; payload: `{payload}'")
 

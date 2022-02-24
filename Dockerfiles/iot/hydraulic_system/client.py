@@ -47,9 +47,9 @@ def readloop(file, openfunc=open, skipfirst=True):
             f.seek(0, 0)
 
 
-def pack_floats(*vals):
-    """Pack a list of floats as float."""
-    return struct.pack(f"@{len(vals)}f", *vals)
+def pack_floats(*vals, fmt="d"):
+    """Pack a list of floats as doubles (fmt='d') or floats (fmt='f')."""
+    return struct.pack(f"@{len(vals)}{fmt}", *vals)
 
 
 def as_json(payload):
@@ -153,7 +153,7 @@ def telemetry(sleep_t, sleep_t_sd, event, die_event, mqtt_topic, broker_addr, mq
                 data_line = next(data_iter).strip().split(dataset_fieldseparator)
                 data_line = list(map(float, data_line))
                 data_line_len = len(data_line)
-                data_b64 = base64.b64encode(pack_floats(*data_line)).decode("utf-8")
+                data_b64 = base64.b64encode(pack_floats(*data_line, fmt="f")).decode("utf-8")
 
                 p = {"sensor": dataset_info[f][0],
                      "description": dataset_info[f][1],
