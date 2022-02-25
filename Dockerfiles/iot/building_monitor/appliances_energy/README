@@ -1,0 +1,62 @@
+Source:
+Luis Candanedo, luismiguel.candanedoibarra '@' umons.ac.be, University of Mons (UMONS).
+
+https://archive.ics.uci.edu/ml/datasets/appliances+energy+prediction
+
+Data Set Information:
+
+The data set is at 10 min for about 4.5 months. The house temperature
+and humidity conditions were monitored with a ZigBee wireless sensor
+network. Each wireless node transmitted the temperature and humidity
+conditions around 3.3 min. Then, the wireless data was averaged for 10
+minutes periods. The energy data was logged every 10 minutes with
+m-bus energy meters. Weather from the nearest airport weather station
+(Chievres Airport, Belgium) was downloaded from a public data set from
+Reliable Prognosis (rp5.ru), and merged together with the experimental
+data sets using the date and time column. Two random variables have
+been included in the data set for testing the regression models and to
+filter out non predictive attributes (parameters).
+
+For more information about the house, data collection, R scripts and
+figures, please refer to the paper and to the following github
+repository: https://github.com/LuisM78/Appliances-energy-prediction-data
+
+Field separator ","
+Decimal separator "."
+
+date		string	year-month-day hour:minute:second
+Appliances	int	energy use in Wh
+lights		int	energy use of light fixtures in the house in Wh
+T1		float	Temperature in kitchen area, in Celsius
+RH_1		float	Humidity in kitchen area, in %
+T2		float	Temperature in living room area, in Celsius
+RH_2		float	Humidity in living room area, in %
+T3		float	Temperature in laundry room area
+RH_3		float	Humidity in laundry room area, in %
+T4		float	Temperature in office room, in Celsius
+RH_4		float	Humidity in office room, in %
+T5		float	Temperature in bathroom, in Celsius
+RH_5		float	Humidity in bathroom, in %
+T6		float	Temperature outside the building (north side), in Celsius
+RH_6		float	Humidity outside the building (north side), in %
+T7		float	Temperature in ironing room , in Celsius
+RH_7		float	Humidity in ironing room, in %
+T8		float	Temperature in teenager room 2, in Celsius
+RH_8		float	Humidity in teenager room 2, in %
+T9		float	Temperature in parents room, in Celsius
+RH_9		float	Humidity in parents room, in %
+T_out		float	Temperature outside (from Chievres weather station), in Celsius
+Press_mm_hg	float	in mm Hg
+RH_out		float	Humidity outside (from Chievres weather station), in %
+Windspeed	float	in m/s
+Visibility	float	in km
+Tdewpoint	float	Â°C
+rv1		float	Random variable 1, nondimensional
+rv2		float	Random variable 2, nondimensional
+
+MODIFIED:
+
+import pandas as pd
+df = pd.read_csv("energydata_complete.csv", sep=",")
+df.to_csv("energydata_complete_pd.csv", sep=",", float_format="%.3f", index=False)
+

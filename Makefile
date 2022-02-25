@@ -14,7 +14,7 @@ all: buildstatus/DNS buildstatus/certificates \
      buildstatus/mqtt_broker_1.6 buildstatus/mqtt_broker_tls \
      buildstatus/mqtt_client_t1 buildstatus/mqtt_client_t2 \
      buildstatus/air_quality buildstatus/cooler_motor buildstatus/predictive_maintenance \
-     buildstatus/hydraulic_system \
+     buildstatus/hydraulic_system buildstatus/building_monitor \
      buildstatus/coap_server buildstatus/coap_cloud buildstatus/city_power buildstatus/city_power_tls \
      buildstatus/combined_cycle buildstatus/combined_cycle_tls \
      buildstatus/city_power_cloud buildstatus/combined_cycle_cloud \
@@ -98,6 +98,10 @@ buildstatus/predictive_maintenance: Dockerfiles/iot/predictive_maintenance/Docke
 
 buildstatus/hydraulic_system: Dockerfiles/iot/hydraulic_system/Dockerfile Dockerfiles/iot/hydraulic_system/client.py Dockerfiles/iot/hydraulic_system/condition_monitoring_hydraulic/*.txt.xz buildstatus/certificates
 	$(BUILD_CMD) --file $< --tag iotsim/hydraulic-system Dockerfiles/iot/hydraulic_system
+	@touch $@
+
+buildstatus/building_monitor: Dockerfiles/iot/building_monitor/Dockerfile Dockerfiles/iot/building_monitor/client.py Dockerfiles/iot/building_monitor/appliances_energy/energydata_complete.csv.xz buildstatus/certificates
+	$(BUILD_CMD) --file $< --tag iotsim/building-monitor Dockerfiles/iot/building_monitor
 	@touch $@
 
 buildstatus/coap_server: Dockerfiles/iot/coap_server/Dockerfile Dockerfiles/iot/coap_server/coap-server-mod.c
