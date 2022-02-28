@@ -154,7 +154,8 @@ def telemetry(sleep_t, sleep_t_sd, event, die_event, mqtt_topic, broker_addr, mq
             # publish a single message to the broker and disconnect cleanly.
 
             try:
-                publish.single(topic=mqtt_topic_new, payload=payload, qos=mqtt_qos, hostname=broker_addr, port=port, tls=tls_arg)
+                # publish.single modifies the tls dictionary (pops 'insecure' key). Pass a copy.
+                publish.single(topic=mqtt_topic_new, payload=payload, qos=mqtt_qos, hostname=broker_addr, port=port, tls=tls_arg.copy() if tls_arg else None)
             except ConnectionRefusedError as e:
                 print(f"[telemetry] {e}")
                 die_event.set()
