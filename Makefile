@@ -9,7 +9,7 @@ include $(CONFIG_FILE)
 
 .PHONY: all templates clean imagerm Mirai_experimentation
 
-all: buildstatus/DNS buildstatus/certificates \
+all: buildstatus/DNS buildstatus/certificates buildstatus/NTP \
      buildstatus/Merlin buildstatus/Mirai_builder buildstatus/Mirai_cnc buildstatus/Mirai_bot \
      buildstatus/mqtt_broker_1.6 buildstatus/mqtt_broker_tls \
      buildstatus/mqtt_client_t1 buildstatus/mqtt_client_t2 \
@@ -50,6 +50,10 @@ buildstatus/DNS: Dockerfiles/DNS/Dockerfile Dockerfiles/DNS/dnsmasq.conf
 
 buildstatus/certificates: Dockerfiles/certificates/Dockerfile
 	$(BUILD_CMD) --file $< --tag iotsim/certificates Dockerfiles/certificates
+	@touch $@
+
+buildstatus/NTP: Dockerfiles/NTP/Dockerfile Dockerfiles/NTP/chrony.conf
+	$(BUILD_CMD) --file $< --tag iotsim/ntp Dockerfiles/NTP
 	@touch $@
 
 buildstatus/Merlin: Dockerfiles/malware/Merlin/Dockerfile $(CONFIG_FILE)
