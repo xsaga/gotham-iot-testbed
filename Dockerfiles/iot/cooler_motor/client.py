@@ -207,8 +207,11 @@ if __name__ == "__main__":
         except KeyError:
             pass
 
-    config["MQTT_TOPIC_PUB"] = f"{config['MQTT_TOPIC_PUB']}/cooler-{socket.gethostname()}"
     config["MQTT_QOS"] = int(config["MQTT_QOS"])
+    for c in ("MQTT_KEEPALIVE", "SLEEP_TIME", "SLEEP_TIME_SD", "PING_SLEEP_TIME", "PING_SLEEP_TIME_SD", "ACTIVE_TIME", "INACTIVE_TIME"):
+        config[c] = float(config[c])
+
+    config["MQTT_TOPIC_PUB"] = f"{config['MQTT_TOPIC_PUB']}/cooler-{socket.gethostname()}"
     print(f"[  setup  ] selected MQTT topic: {config['MQTT_TOPIC_PUB']}")
 
     config["ping_bin"] = shutil.which("ping")

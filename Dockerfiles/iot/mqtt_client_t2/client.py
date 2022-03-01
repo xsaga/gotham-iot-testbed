@@ -17,6 +17,9 @@ for key in config.keys():
     except KeyError:
         pass
 
+for c in ("SLEEP_TIME", "SLEEP_TIME_SD"):
+    config[c] = float(config[c])
+
 config["MQTT_TOPIC_PUB"] = config["MQTT_TOPIC_PUB"] + "/" + os.environ["HOSTNAME"]
 
 
@@ -28,6 +31,6 @@ def proc_stat():
 while True:
     message = f"/proc/stat:{proc_stat()}"
     publish.single(topic=config["MQTT_TOPIC_PUB"], payload=message, hostname=config["MQTT_BROKER_ADDR"])
-    sleep_time = random.gauss(float(config["SLEEP_TIME"]), float(config["SLEEP_TIME_SD"]))
-    sleep_time = float(config["SLEEP_TIME"]) if sleep_time < 0 else sleep_time
+    sleep_time = random.gauss(config["SLEEP_TIME"], config["SLEEP_TIME_SD"])
+    sleep_time = config["SLEEP_TIME"] if sleep_time < 0 else sleep_time
     time.sleep(sleep_time)

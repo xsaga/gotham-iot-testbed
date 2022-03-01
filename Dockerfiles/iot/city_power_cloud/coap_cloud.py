@@ -179,6 +179,9 @@ if __name__ == "__main__":
         except KeyError:
             pass
 
+    for c in ("SLEEP_TIME", "SLEEP_TIME_SD", "PING_SLEEP_TIME", "PING_SLEEP_TIME_SD", "ACTIVE_TIME", "INACTIVE_TIME"):
+        config[c] = float(config[c])
+
     if not config["COAP_ADDR_LIST"]:
         sys.exit("[ set up ] COAP_ADDR_LIST is empty. Exiting.")
 

@@ -31,6 +31,9 @@ for key in config.keys():
     except KeyError:
         pass
 
+for c in ("SLEEP_TIME", "SLEEP_TIME_SD"):
+    config[c] = float(config[c])
+
 address_list = []
 # config["COAP_ADDR_LIST"] example: "192.168.10.1-192.168.10.50;192.168.20.2-192.168.20.2;192.168.30.0-192.168.30.5"
 for ip_range in list(map(str.strip, config["COAP_ADDR_LIST"].split(";"))):
@@ -55,6 +58,6 @@ while True:
             print(e)
         print(f"Result stdout: {cmd_result.stdout}\nstderr: {cmd_result.stderr}")
 
-    sleep_time = random.gauss(float(config["SLEEP_TIME"]), float(config["SLEEP_TIME_SD"]))
-    sleep_time = float(config["SLEEP_TIME"]) if sleep_time < 0 else sleep_time
+    sleep_time = random.gauss(config["SLEEP_TIME"], config["SLEEP_TIME_SD"])
+    sleep_time = config["SLEEP_TIME"] if sleep_time < 0 else sleep_time
     time.sleep(sleep_time)

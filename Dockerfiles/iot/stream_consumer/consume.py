@@ -20,14 +20,17 @@ def ping(bin_path, destination, attempts=3, wait=10):
 config = {"STREAM_SERVER_ADDR": "localhost",
           "STREAM_SERVER_PORT": "8554",
           "STREAM_NAME": "mystream",
-          "ACTIVE_TIME": "60",
-          "INACTIVE_TIME": "100"}
+          "ACTIVE_TIME": 60,
+          "INACTIVE_TIME": 100}
 
 for key in config.keys():
     try:
         config[key] = os.environ[key]
     except KeyError:
         pass
+
+for c in ("ACTIVE_TIME", "INACTIVE_TIME"):
+    config[c] = float(config[c])
 
 ping_bin = shutil.which("ping")
 if not ping_bin:
@@ -45,7 +48,7 @@ while True:
     proc = subprocess.Popen(stream_cmd)
 
     try:
-        proc.wait(timeout=int(config["ACTIVE_TIME"]))
+        proc.wait(timeout=config["ACTIVE_TIME"])
     except subprocess.TimeoutExpired:
         print("Sending SIGTERM to process")
         proc.terminate()
@@ -56,4 +59,4 @@ while True:
     if proc.returncode == 1:
         sys.exit(f"error in {proc.args[0]}")
 
-    time.sleep(int(config["INACTIVE_TIME"]))
+    time.sleep(config["INACTIVE_TIME"])
