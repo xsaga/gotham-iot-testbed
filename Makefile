@@ -1,4 +1,4 @@
-BUILD_CMD = echo docker build
+BUILD_CMD = docker build
 ifdef NOCACHE
 BUILD_CMD += --no-cache
 endif
