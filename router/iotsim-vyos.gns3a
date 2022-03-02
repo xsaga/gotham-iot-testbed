@@ -1,0 +1,58 @@
+{
+    "appliance_id": "ec52f86f-f1fe-4cf3-b428-540fadd9e343",
+    "name": "VyOS",
+    "category": "router",
+    "description": "VyOS \u2013 Open source router and firewall platform",
+    "vendor_name": "VyOS",
+    "vendor_url": "https://vyos.io/",
+    "documentation_url": "https://docs.vyos.io/en/equuleus/",
+    "product_name": "VyOS",
+    "product_url": "https://vyos.io/",
+    "registry_version": 3,
+    "status": "stable",
+    "availability": "free",
+    "maintainer": "https://github.com/xsaga",
+    "maintainer_email": "https://github.com/xsaga",
+    "usage": "Default username/password is vyos/vyos. GNS3 installation guide https://docs.vyos.io/en/equuleus/installation/virtual/gns3.html",
+    "port_name_format": "eth{0}",
+    "qemu": {
+        "adapter_type": "virtio-net-pci",
+        "adapters": 3,
+        "ram": 512,
+        "cpus": 1,
+        "hda_disk_interface": "scsi",
+        "arch": "x86_64",
+        "console_type": "telnet",
+        "boot_priority": "cd",
+        "kvm": "require",
+        "options": "-cpu host",
+        "process_priority": "normal"
+    },
+    "images": [
+        {
+            "filename": "vyos-1.3.0-rc6-amd64.iso",
+            "version": "1.3.0",
+            "md5sum": "b3939f82a35b23d428ee0ad4ac8be087",
+            "filesize": 331350016,
+            "download_url": "https://vyos.net/get/snapshots/",
+            "direct_download_url": "https://s3.amazonaws.com/s3-us.vyos.io/snapshot/vyos-1.3.0-rc6/vyos-1.3.0-rc6-amd64.iso"
+        },
+        {
+            "filename": "empty8G.qcow2",
+            "version": "1.0",
+            "md5sum": "f1d2c25b6990f99bd05b433ab603bdb4",
+            "filesize": 197120,
+            "download_url": "https://sourceforge.net/projects/gns-3/files/Empty%20Qemu%20disk/",
+            "direct_download_url": "https://sourceforge.net/projects/gns-3/files/Empty%20Qemu%20disk/empty8G.qcow2/download"
+        }
+    ],
+    "versions": [
+        {
+            "images": {
+                "hda_disk_image": "empty8G.qcow2",
+                "cdrom_image": "vyos-1.3.0-rc6-amd64.iso"
+            },
+            "name": "1.3.0"
+        }
+    ]
+}

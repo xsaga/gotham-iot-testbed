@@ -7,7 +7,7 @@ CONFIG_FILE = iot-sim.config
 include $(CONFIG_FILE)
 
 
-.PHONY: all templates clean imagerm Mirai_experimentation
+.PHONY: all templates vyosiso clean imagerm Mirai_experimentation
 
 all: buildstatus/DNS buildstatus/certificates buildstatus/NTP \
      buildstatus/Merlin buildstatus/Mirai_builder buildstatus/Mirai_cnc buildstatus/Mirai_bot \
@@ -24,6 +24,9 @@ all: buildstatus/DNS buildstatus/certificates buildstatus/NTP \
 
 templates: Dockerfiles/certificates/Dockerfile Dockerfiles/DNS/dnsmasq.conf \
            Dockerfiles/malware/Mirai/Dockerfile.cnc Dockerfiles/malware/Mirai/Dockerfile.builder
+
+vyosiso:
+	wget https://s3.amazonaws.com/s3-us.vyos.io/snapshot/vyos-1.3.0-rc6/vyos-1.3.0-rc6-amd64.iso
 
 Dockerfiles/certificates/Dockerfile: Dockerfiles/certificates/Dockerfile.template $(CONFIG_FILE)
 	sed 's/!PLACEHOLDER-MQTT_TLS_BROKER_CN!/$(MQTT_TLS_BROKER_CN)/g' $< > $@
