@@ -10,7 +10,7 @@ set interfaces loopback lo
 set protocols static route 0.0.0.0/0 next-hop 192.168.16.1
 set system config-management commit-revisions '100'
 set system console device ttyS0 speed '115200'
-set system host-name 'vyos'
+set system host-name 'Rloc-2'
 set system login user vyos authentication encrypted-password '$6$3c/L64hmggihBEyB$VeIccV.LmWtWGEOu1Dr6jzpboZs9UkdByHiT1zq9KFhsjatm7bdmDFee4U468fiNvw8N8EvYqMBzRR2GRuMB9.'
 set system login user vyos authentication plaintext-password ''
 set system ntp server 0.pool.ntp.org
