@@ -10,7 +10,7 @@ include $(CONFIG_FILE)
 .PHONY: all templates vyosiso clean imagerm Mirai_experimentation
 
 all: buildstatus/DNS buildstatus/certificates buildstatus/NTP \
-     buildstatus/Merlin buildstatus/Mirai_builder buildstatus/Mirai_cnc buildstatus/Mirai_bot \
+     buildstatus/Merlin buildstatus/Mirai_builder buildstatus/Mirai_cnc buildstatus/Mirai_bot buildstatus/Mirai_scan_listener \
      buildstatus/mqtt_broker_1.6 buildstatus/mqtt_broker_tls \
      buildstatus/mqtt_client_t1 buildstatus/mqtt_client_t2 \
      buildstatus/air_quality buildstatus/cooler_motor buildstatus/predictive_maintenance \
@@ -73,6 +73,10 @@ buildstatus/Mirai_cnc: Dockerfiles/malware/Mirai/Dockerfile.cnc buildstatus/Mira
 
 buildstatus/Mirai_bot: Dockerfiles/malware/Mirai/Dockerfile.bot buildstatus/Mirai_builder
 	$(BUILD_CMD) --file $< --tag iotsim/mirai-bot Dockerfiles/malware/Mirai
+	@touch $@
+
+buildstatus/Mirai_scan_listener: Dockerfiles/malware/Mirai/Dockerfile.scanlistener buildstatus/Mirai_builder
+	$(BUILD_CMD) --file $< --tag iotsim/mirai-scan-listener Dockerfiles/malware/Mirai
 	@touch $@
 
 buildstatus/mqtt_broker_1.6: Dockerfiles/iot/mqtt_broker/Dockerfile.1.6
