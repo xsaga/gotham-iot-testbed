@@ -10,7 +10,7 @@ include $(CONFIG_FILE)
 .PHONY: all templates vyosiso clean imagerm Mirai_experimentation
 
 all: buildstatus/DNS buildstatus/certificates buildstatus/NTP \
-     buildstatus/Merlin buildstatus/Mirai_builder buildstatus/Mirai_cnc buildstatus/Mirai_bot buildstatus/Mirai_scan_listener \
+     buildstatus/Merlin buildstatus/Mirai_builder buildstatus/Mirai_cnc buildstatus/Mirai_bot buildstatus/Mirai_scan_listener buildstatus/Mirai_loader \
      buildstatus/mqtt_broker_1.6 buildstatus/mqtt_broker_tls \
      buildstatus/mqtt_client_t1 buildstatus/mqtt_client_t2 \
      buildstatus/air_quality buildstatus/cooler_motor buildstatus/predictive_maintenance \
@@ -42,7 +42,8 @@ Dockerfiles/malware/Mirai/Dockerfile.cnc: Dockerfiles/malware/Mirai/Dockerfile.c
 
 Dockerfiles/malware/Mirai/Dockerfile.builder: Dockerfiles/malware/Mirai/Dockerfile.builder.template Dockerfiles/malware/Mirai/get_random_ip.patch $(CONFIG_FILE)
 	LAB_DNS_IPADDR_COMMAS=$(shell echo $(LAB_DNS_IPADDR) | tr "." ","); \
-	sed "s/!PLACEHOLDER-LAB_DNS_IPADDR!/$$LAB_DNS_IPADDR_COMMAS/g" $< > $@
+	sed -e "s/!PLACEHOLDER-LAB_DNS_IPADDR!/$$LAB_DNS_IPADDR_COMMAS/g" \
+	    -e 's/!PLACEHOLDER-MIRAI_WGET_LOADER_IPADDR!/$(MIRAI_WGET_LOADER_IPADDR)/g' $< > $@
 
 Mirai_experimentation: Dockerfiles/malware/Mirai/Dockerfile.experimentation
 	$(BUILD_CMD) --file $< --tag iotsim/mirai-experimentation Dockerfiles/malware/Mirai
@@ -77,6 +78,10 @@ buildstatus/Mirai_bot: Dockerfiles/malware/Mirai/Dockerfile.bot buildstatus/Mira
 
 buildstatus/Mirai_scan_listener: Dockerfiles/malware/Mirai/Dockerfile.scanlistener buildstatus/Mirai_builder
 	$(BUILD_CMD) --file $< --tag iotsim/mirai-scan-listener Dockerfiles/malware/Mirai
+	@touch $@
+
+buildstatus/Mirai_loader: Dockerfiles/malware/Mirai/Dockerfile.loader buildstatus/Mirai_builder
+	$(BUILD_CMD) --file $< --tag iotsim/mirai-loader Dockerfiles/malware/Mirai
 	@touch $@
 
 buildstatus/mqtt_broker_1.6: Dockerfiles/iot/mqtt_broker/Dockerfile.1.6
