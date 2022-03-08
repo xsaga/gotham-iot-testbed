@@ -249,6 +249,18 @@ def start_all_switches(server: Server, project: Project, switches_pattern : Patt
             time.sleep(0.3)
 
 
+def start_all_routers(server: Server, project: Project, routers_pattern : Pattern=re.compile("vyos.*", re.IGNORECASE)) -> None:
+    """Start all router nodes (VyOS routers)."""
+    routers = get_nodes_id_by_name_regexp(server, project, routers_pattern)
+    if routers:
+        print(f"found {len(routers)} routers")
+        for r in routers:
+            print(f"Starting {r.name}... ", end="", flush=True)
+            start_node(server, project, r.id)
+            print("OK")
+            time.sleep(0.3)
+
+
 def stop_all_switches(server: Server, project: Project, switches_pattern : Pattern=re.compile("openvswitch.*", re.IGNORECASE)) -> None:
     """Stop all network switch nodes (OpenvSwitch switches)."""
     switches = get_nodes_id_by_name_regexp(server, project, switches_pattern)
@@ -257,6 +269,18 @@ def stop_all_switches(server: Server, project: Project, switches_pattern : Patte
         for sw in switches:
             print(f"Stopping {sw.name}... ", end="", flush=True)
             stop_node(server, project, sw.id)
+            print("OK")
+            time.sleep(0.3)
+
+
+def stop_all_routers(server: Server, project: Project, routers_pattern : Pattern=re.compile("vyos.*", re.IGNORECASE)) -> None:
+    """Stop all router nodes (VyOS routers)."""
+    routers = get_nodes_id_by_name_regexp(server, project, routers_pattern)
+    if routers:
+        print(f"found {len(routers)} routers")
+        for r in routers:
+            print(f"Stopping {r.name}... ", end="", flush=True)
+            stop_node(server, project, r.id)
             print("OK")
             time.sleep(0.3)
 
