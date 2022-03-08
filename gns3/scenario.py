@@ -1,5 +1,3 @@
-from collections import namedtuple
-from typing import Any, List, Dict, Optional, Pattern
 import configparser
 import ipaddress
 import json
@@ -7,8 +5,12 @@ import os
 import re
 import resource
 import time
-import requests
 import warnings
+
+from collections import namedtuple
+from typing import Any, List, Dict, Optional, Pattern
+
+import requests
 
 PROJECT_NAME = "iot_anomaly_detection_2"
 
