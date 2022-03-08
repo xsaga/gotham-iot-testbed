@@ -94,6 +94,19 @@ def get_nodes_id_by_name_regexp(server: Server, project: Project, name_regexp: P
     return [Item(n["name"], n["node_id"]) for n in nodes_filtered]
 
 
+def get_node_telnet_host_port(server: Server, project: Project, node_id: str) -> tuple:
+    """Get the telnet hostname and port of a node."""
+    r = requests.get(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/nodes/{node_id}", auth=(server.user, server.password))
+    r.raise_for_status()
+    # TODO include checks for console type
+    assert r.json()["console_type"] == "telnet"
+    if r.json()["console_host"] in ("0.0.0.0", "::"):
+        host = server.addr
+    else:
+        host = r.json()["console_host"]
+    return (host, r.json()["console"])
+
+
 def get_links_id_from_node_connected_to_name_regexp(server: Server, project: Project, node_id: str, name_regexp: Pattern) -> Optional[List[Item]]:
     """Get all the link IDs from node node_id connected to other nodes with names that match name_regexp regular expression."""
     r = requests.get(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/nodes/{node_id}", auth=(server.user, server.password))
