@@ -12,11 +12,12 @@ from typing import Any, List, Dict, Optional, Pattern
 
 import requests
 
-PROJECT_NAME = "iot_anomaly_detection_2"
+PROJECT_NAME = "iot_sim"
 
 Server = namedtuple("Server", ("addr", "port", "auth", "user", "password"))
 Project = namedtuple("Project", ("name", "id", "grid_unit"))
 Item = namedtuple("Item", ("name", "id"))
+Position = namedtuple("Position", ("x", "y"))
 
 
 def check_resources() -> None:
@@ -120,6 +121,17 @@ def get_links_id_from_node_connected_to_name_regexp(server: Server, project: Pro
     return links_filtered
 
 
+def create_node(server: Server, project: Project, start_x: int, start_y: int, node_template_id: str, node_name: Optional[str] = None):
+    """Create selected node at coordinates start_x, start_y."""
+    payload = {"x": start_x, "y": start_y}
+    if node_name:
+        # GNS3 is not updating the name...
+        payload["name"] = node_name
+    r = requests.post(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/templates/{node_template_id}", data=json.dumps(payload), auth=(server.user, server.password))
+    r.raise_for_status()
+    return r.json()
+
+
 def start_node(server: Server, project: Project, node_id: str) -> None:
     """Start selected node."""
     r = requests.post(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/nodes/{node_id}/start", data={}, auth=(server.user, server.password))
@@ -137,6 +149,16 @@ def delete_node(server: Server, project: Project, node_id: str) -> None:
     # check if node is running?
     r = requests.delete(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/nodes/{node_id}", auth=(server.user, server.password))
     r.raise_for_status()
+
+
+def create_link(server: Server, project: Project, node1_id: str, node1_port: int, node2_id: str, node2_port: int):
+    """Create link between two nodes."""
+    payload = {"nodes":[{"node_id": node1_id, "adapter_number": node1_port, "port_number": 0},
+                        {"node_id": node2_id, "adapter_number": node2_port, "port_number": 0}]}
+    r = requests.post(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/links", data=json.dumps(payload), auth=(server.user, server.password))
+    r.raise_for_status()
+    # TODO rename link node labels
+    return r.json()
 
 
 def create_cluster_of_devices(server, project, num_devices, start_x, start_y, switch_template_id, device_template_id, start_ip, devices_per_row=10):
@@ -301,8 +323,9 @@ if filtered_projects:
 else:
     # create the project
     # http://api.gns3.net/en/2.2/api/v2/controller/project/projects.html
-    payload = {"name": PROJECT_NAME, "show_grid": True, "scene_height": 2000, "scene_width": 4000}
-    r = requests.post(f"http://{server.addr}:{server.port}/v2/projects", data=json.dumps(payload), auth=(server.user, server.password))
+    # Coordinate 0,0 is located in the center of the project
+    payload_project = {"name": PROJECT_NAME, "show_grid": True, "scene_height": 2000, "scene_width": 4000}
+    r = requests.post(f"http://{server.addr}:{server.port}/v2/projects", data=json.dumps(payload_project), auth=(server.user, server.password))
     r.raise_for_status()
     p = r.json()
     project = Project(name=p["name"], id=p["project_id"], grid_unit=int(p["grid_size"]*1.4))
@@ -322,10 +345,11 @@ r.raise_for_status()
 templates = r.json()
 
 # get template ids
-# "Open vSwitch 64": ehlers/openvswitch
-# "Open vSwitch": default appliance
-switch_64_template_id = template_id_from_name(templates, "Open vSwitch 64")
-assert switch_64_template_id
+router_template_id = template_id_from_name(templates, "VyOS 1.3.0")
+assert router_template_id
+switch_template_id = template_id_from_name(templates, "Open vSwitch")
+assert switch_template_id
+
 mqtt_device_t1_template_id = template_id_from_name(templates, "mqtt-device-t1")
 assert mqtt_device_t1_template_id
 mqtt_device_t2_template_id = template_id_from_name(templates, "mqtt-device-t2")
@@ -333,11 +357,41 @@ assert mqtt_device_t2_template_id
 coap_device_t1_template_id = template_id_from_name(templates, "coap-device-t1")
 assert coap_device_t1_template_id
 
+############
+# TOPOLOGY #
+############
+
+coord_rnorth = Position(0, -300) 0, -300
+coord_rwest = Position(-150, -75) -150, -75
+coord_reast = Position(150, -75) 150, 75
+
+# routers
+rnorth = create_node(server, project, coord_rnorth.x, coord_rnorth.y, router_template_id)
+rwest = create_node(server, project, coord_rwest.x, coord_rwest.y, router_template_id)
+reast = create_node(server, project, coord_reast.x, coord_reast.y, router_template_id)
+
+create_link(server, project, rnorth["node_id"], 1, rwest["node_id"], 1)
+create_link(server, project, rnorth["node_id"], 2, reast["node_id"], 1)
+create_link(server, project, rwest["node_id"], 2, reast["node_id"], 2)
+
+# switches
+coord_snorth = Position(coord_rnorth.x, coord_rnorth.y - 150)
+coord_swest = Position(coord_rwest.x - 150, coord_rwest.y)
+coord_seast = Position(coord_reast.x + 150, coord_reast.y)
+
+snorth = create_node(server, project, coord_snorth.x, coord_snorth.y, switch_template_id)
+swest = create_node(server, project, coord_swest.x, coord_swest.y, switch_template_id)
+seast = create_node(server, project, coord_seast.x, coord_seast.y, switch_template_id)
+
+create_link(server, project, rnorth["node_id"], 0, snorth["node_id"], 0)
+create_link(server, project, rwest["node_id"], 0, swest["node_id"], 0)
+create_link(server, project, reast["node_id"], 0, seast["node_id"], 0)
+
 # -1900, -400
 
-cluster_mqtt1, coord = create_cluster_of_devices(server, project, 50, -1900, -300, switch_64_template_id, mqtt_device_t1_template_id, ipaddress.IPv4Address("192.168.10.1"))
-cluster_mqtt2, coord = create_cluster_of_devices(server, project, 50, coord[2]+2*project.grid_unit, coord[1], switch_64_template_id, mqtt_device_t2_template_id, ipaddress.IPv4Address("192.168.20.1"))
-cluster_coap1, coord = create_cluster_of_devices(server, project, 50, coord[2]+2*project.grid_unit, coord[1], switch_64_template_id, coap_device_t1_template_id, ipaddress.IPv4Address("192.168.30.1"))
+cluster_mqtt1, coord = create_cluster_of_devices(server, project, 50, -1900, -300, switch_template_id, mqtt_device_t1_template_id, ipaddress.IPv4Address("192.168.10.1"))
+cluster_mqtt2, coord = create_cluster_of_devices(server, project, 50, coord[2]+2*project.grid_unit, coord[1], switch_template_id, mqtt_device_t2_template_id, ipaddress.IPv4Address("192.168.20.1"))
+cluster_coap1, coord = create_cluster_of_devices(server, project, 50, coord[2]+2*project.grid_unit, coord[1], switch_template_id, coap_device_t1_template_id, ipaddress.IPv4Address("192.168.30.1"))
 
 start_capture(server, project, cluster_mqtt1["devices_link_id"])
 start_capture(server, project, cluster_mqtt2["devices_link_id"])
