@@ -376,8 +376,8 @@ create_link(server, project, rwest["node_id"], 2, reast["node_id"], 2)
 
 # switches
 coord_snorth = Position(coord_rnorth.x, coord_rnorth.y - 150)
-coord_swest = Position(coord_rwest.x - 150, coord_rwest.y)
-coord_seast = Position(coord_reast.x + 150, coord_reast.y)
+coord_swest = Position(coord_rwest.x - 300, coord_rwest.y)
+coord_seast = Position(coord_reast.x + 300, coord_reast.y)
 
 snorth = create_node(server, project, coord_snorth.x, coord_snorth.y, switch_template_id)
 swest = create_node(server, project, coord_swest.x, coord_swest.y, switch_template_id)
@@ -386,6 +386,34 @@ seast = create_node(server, project, coord_seast.x, coord_seast.y, switch_templa
 create_link(server, project, rnorth["node_id"], 0, snorth["node_id"], 0)
 create_link(server, project, rwest["node_id"], 0, swest["node_id"], 0)
 create_link(server, project, reast["node_id"], 0, seast["node_id"], 0)
+
+# routers west zone
+routers_west_zone = []
+coords_west_zone = []
+swest_freeport = 1
+for i in [-3, -1, 1, 3]:
+    coord_rwz = Position(coord_swest.x + 150*i, coord_swest.y + 150)
+    rwz = create_node(server, project, coord_rwz.x, coord_rwz.y, router_template_id)
+    create_link(server, project, rwz["node_id"], 1, swest["node_id"], swest_freeport)
+    swest_freeport += 1
+    swz = create_node(server, project, coord_rwz.x, coord_rwz.y + 150, switch_template_id)
+    create_link(server, project, rwz["node_id"], 0, swz["node_id"], 0)
+    routers_west_zone.append(rwz)
+    coords_west_zone.append(coord_rwz)
+
+# routers east zone
+routers_east_zone = []
+coords_east_zone = []
+seast_freeport = 1
+for i in [-2, 0, 2]:
+    coord_rez = Position(coord_seast.x + 150*i, coord_seast.y + 150)
+    rez = create_node(server, project, coord_rez.x, coord_rez.y, router_template_id)
+    create_link(server, project, rez["node_id"], 1, seast["node_id"], seast_freeport)
+    seast_freeport += 1
+    sez = create_node(server, project, coord_rez.x, coord_rez.y + 150, switch_template_id)
+    create_link(server, project, rez["node_id"], 0, sez["node_id"], 0)
+    routers_east_zone.append(rez)
+    coords_east_zone.append(coord_rez)
 
 # -1900, -400
 
