@@ -361,9 +361,9 @@ assert coap_device_t1_template_id
 # TOPOLOGY #
 ############
 
-coord_rnorth = Position(0, -300) 0, -300
-coord_rwest = Position(-150, -75) -150, -75
-coord_reast = Position(150, -75) 150, 75
+coord_rnorth = Position(0, -300)
+coord_rwest = Position(-150, -75)
+coord_reast = Position(150, -75)
 
 # routers
 rnorth = create_node(server, project, coord_rnorth.x, coord_rnorth.y, router_template_id)
