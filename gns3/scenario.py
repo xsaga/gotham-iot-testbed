@@ -417,12 +417,14 @@ def install_vyos_image_on_node(node_id: str, hostname: str, telnet_port: int) ->
         print(out[0])
         print(out[2].decode("utf-8"))
 
+        time.sleep(2)
         tn.write(b"poweroff\n")
         out = tn.expect([b"Are you sure you want to poweroff this system"], timeout=10)
         print(out[0])
         print(out[2].decode("utf-8"))
 
         tn.write(b"y\n")
+        time.sleep(2)
 
 
 def configure_vyos_image_on_node(node_id: str, hostname: str, telnet_port: int, path_script: str) -> None:
@@ -474,7 +476,10 @@ def configure_vyos_image_on_node(node_id: str, hostname: str, telnet_port: int, 
         print(out[2].decode("utf-8"))
 
         tn.write(b"./config.sh\n")
-        out = tn.expect([b"vyos@vyos:~\$"], timeout=60)
+        out = tn.expect([b"Done"], timeout=60)
+        print(out[0])
+        print(out[2].decode("utf-8"))
+        out = tn.expect([b"vyos@vyos:~\$"], timeout=10)
         print(out[0])
         print(out[2].decode("utf-8"))
 
@@ -484,6 +489,7 @@ def configure_vyos_image_on_node(node_id: str, hostname: str, telnet_port: int, 
         print(out[2].decode("utf-8"))
 
         tn.write(b"y\n")
+        time.sleep(2)
 
 
 check_resources()
