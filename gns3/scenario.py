@@ -567,6 +567,21 @@ create_link(server, project, rnorth["node_id"], 1, rwest["node_id"], 1)
 create_link(server, project, rnorth["node_id"], 2, reast["node_id"], 1)
 create_link(server, project, rwest["node_id"], 2, reast["node_id"], 2)
 
+# installation and configuration
+# TODO in parallel?
+backbone_routers = [rnorth, rwest, reast]
+backbone_configs = ["../router/backbone/router_north.sh",
+                    "../router/backbone/router_west.sh",
+                    "../router/backbone/router_east.sh"]
+for router_node, config in zip(backbone_routers, backbone_configs):
+    print(f"Installing {router_node['name']}")
+    hostname, port = get_node_telnet_host_port(server, project, router_node["node_id"])
+    start_node(server, project, router_node["node_id"])
+    install_vyos_image_on_node(router_node["node_id"], hostname, port)
+    print(f"Configuring {router_node['name']} with {config}")
+    start_node(server, project, router_node["node_id"])
+    configure_vyos_image_on_node(router_node["node_id"], hostname, port, config)
+
 # switches
 coord_snorth = Position(coord_rnorth.x, coord_rnorth.y - 150)
 coord_swest = Position(coord_rwest.x - 300, coord_rwest.y)
