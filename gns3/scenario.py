@@ -347,8 +347,16 @@ def stop_capture_all_iot_links(server, project, switches_pattern: Pattern=re.com
         time.sleep(0.3)
 
 
-def install_vyos_image_on_node(node_id: str, hostname: str, telnet_port: int) -> None:
-    """Perform VyOS installation steps."""
+def install_vyos_image_on_node(node_id: str, hostname: str, telnet_port: int, pre_exec : Optional[str] = None) -> None:
+    """Perform VyOS installation steps.
+
+    pre_exec example:
+    pre_exec = "konsole -e telnet localhost 5000"
+    """
+    if pre_exec:
+        import subprocess
+        import shlex
+        pre_proc = subprocess.Popen(shlex.split(pre_exec))
     with Telnet(hostname, telnet_port) as tn:
         out = tn.read_until(b"vyos login:")
         print(out.decode("utf-8").split("\n")[-1])
@@ -426,9 +434,21 @@ def install_vyos_image_on_node(node_id: str, hostname: str, telnet_port: int) ->
         tn.write(b"y\n")
         time.sleep(2)
 
+    if pre_exec:
+        pre_proc.kill()
 
-def configure_vyos_image_on_node(node_id: str, hostname: str, telnet_port: int, path_script: str) -> None:
-    """Configure VyOS router."""
+
+def configure_vyos_image_on_node(node_id: str, hostname: str, telnet_port: int, path_script: str, pre_exec: Optional[str] = None) -> None:
+    """Configure VyOS router.
+
+    pre_exec example:
+    pre_exec = "konsole -e telnet localhost 5000"
+    """
+    if pre_exec:
+        import subprocess
+        import shlex
+        pre_proc = subprocess.Popen(shlex.split(pre_exec))
+
     local_checksum = md5sum_file(path_script)
 
     with open(path_script, "rb") as f:
@@ -490,6 +510,9 @@ def configure_vyos_image_on_node(node_id: str, hostname: str, telnet_port: int, 
 
         tn.write(b"y\n")
         time.sleep(2)
+
+    if pre_exec:
+        pre_proc.kill()
 
 
 check_resources()
@@ -576,11 +599,12 @@ backbone_configs = ["../router/backbone/router_north.sh",
 for router_node, config in zip(backbone_routers, backbone_configs):
     print(f"Installing {router_node['name']}")
     hostname, port = get_node_telnet_host_port(server, project, router_node["node_id"])
+    terminal_cmd = f"konsole -e telnet {hostname} {port}"
     start_node(server, project, router_node["node_id"])
-    install_vyos_image_on_node(router_node["node_id"], hostname, port)
+    install_vyos_image_on_node(router_node["node_id"], hostname, port, pre_exec=terminal_cmd)
     print(f"Configuring {router_node['name']} with {config}")
     start_node(server, project, router_node["node_id"])
-    configure_vyos_image_on_node(router_node["node_id"], hostname, port, config)
+    configure_vyos_image_on_node(router_node["node_id"], hostname, port, config, pre_exec=terminal_cmd)
 
 # switches
 coord_snorth = Position(coord_rnorth.x, coord_rnorth.y - 150)
