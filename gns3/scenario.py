@@ -1,4 +1,6 @@
+import base64
 import configparser
+import hashlib
 import ipaddress
 import json
 import os
@@ -8,6 +10,7 @@ import time
 import warnings
 
 from collections import namedtuple
+from telnetlib import Telnet
 from typing import Any, List, Dict, Optional, Pattern
 
 import requests
@@ -18,6 +21,14 @@ Server = namedtuple("Server", ("addr", "port", "auth", "user", "password"))
 Project = namedtuple("Project", ("name", "id", "grid_unit"))
 Item = namedtuple("Item", ("name", "id"))
 Position = namedtuple("Position", ("x", "y"))
+
+
+def md5sum_file(fname: str) -> str:
+    """Get file MD5 checksum."""
+    # TODO update in chunks.
+    with open(fname, "rb") as f:
+        data = f.read()
+    return hashlib.md5(data).hexdigest()
 
 
 def check_resources() -> None:
@@ -334,6 +345,145 @@ def stop_capture_all_iot_links(server, project, switches_pattern: Pattern=re.com
             else:
                 print("0 links, skipping.")
         time.sleep(0.3)
+
+
+def install_vyos_image_on_node(node_id: str, hostname: str, telnet_port: int) -> None:
+    """Perform VyOS installation steps."""
+    with Telnet(hostname, telnet_port) as tn:
+        out = tn.read_until(b"vyos login:")
+        print(out.decode("utf-8").split("\n")[-1])
+
+        tn.write(b"vyos\n")
+        out = tn.expect([b"Password:"], timeout=10)
+        print(out[2].decode("utf-8"))
+
+        tn.write(b"vyos\n")
+        out = tn.expect([b"vyos@vyos:~\$"], timeout=10)
+        print(out[0])
+        print(out[2].decode("utf-8"))
+
+        tn.write(b"install image\n")
+        out = tn.expect([b"Would you like to continue\? \(Yes/No\)"], timeout=10)
+        print(out[0])
+        print(out[2].decode("utf-8"))
+
+        tn.write(b"Yes\n")
+        out = tn.expect([b"Partition \(Auto/Parted/Skip\)"], timeout=10)
+        print(out[0])
+        print(out[2].decode("utf-8"))
+
+        tn.write(b"Auto\n")
+        out = tn.expect([b"Install the image on"], timeout=10)
+        print(out[0])
+        print(out[2].decode("utf-8"))
+
+        tn.write(b"\n")
+        out = tn.expect([b"Continue\? \(Yes/No\)"], timeout=10)
+        print(out[0])
+        print(out[2].decode("utf-8"))
+
+        tn.write(b"Yes\n")
+        out = tn.expect([b"How big of a root partition should I create"], timeout=30)
+        print(out[0])
+        print(out[2].decode("utf-8"))
+
+        tn.write(b"\n")
+        out = tn.expect([b"What would you like to name this image"], timeout=30)
+        print(out[0])
+        print(out[2].decode("utf-8"))
+
+        tn.write(b"\n")
+        out = tn.expect([b"Which one should I copy to"], timeout=30)
+        print(out[0])
+        print(out[2].decode("utf-8"))
+
+        tn.write(b"\n")
+        out = tn.expect([b"Enter password for user 'vyos':"], timeout=10)
+        print(out[0])
+        print(out[2].decode("utf-8"))
+
+        tn.write(b"vyos\n")
+        out = tn.expect([b"Retype password for user 'vyos':"], timeout=10)
+        print(out[0])
+        print(out[2].decode("utf-8"))
+
+        tn.write(b"vyos\n")
+        out = tn.expect([b"Which drive should GRUB modify the boot partition on"], timeout=10)
+        print(out[0])
+        print(out[2].decode("utf-8"))
+
+        tn.write(b"\n")
+        out = tn.expect([b"vyos@vyos:~\$"], timeout=30)
+        print(out[0])
+        print(out[2].decode("utf-8"))
+
+        tn.write(b"poweroff\n")
+        out = tn.expect([b"Are you sure you want to poweroff this system"], timeout=10)
+        print(out[0])
+        print(out[2].decode("utf-8"))
+
+        tn.write(b"y\n")
+
+
+def configure_vyos_image_on_node(node_id: str, hostname: str, telnet_port: int, path_script: str) -> None:
+    """Configure VyOS router."""
+    local_checksum = md5sum_file(path_script)
+
+    with open(path_script, "rb") as f:
+        config = base64.b64encode(f.read())
+
+    with Telnet(hostname, telnet_port) as tn:
+        out = tn.read_until(b"vyos login:")
+        print(out.decode("utf-8").split("\n")[-1])
+
+        tn.write(b"vyos\n")
+        out = tn.expect([b"Password:"], timeout=10)
+        print(out[2].decode("utf-8"))
+
+        tn.write(b"vyos\n")
+        out = tn.expect([b"vyos@vyos:~\$"], timeout=10)
+        print(out[0])
+        print(out[2].decode("utf-8"))
+
+        payload = b"echo '" + config + b"' >> config.b64\n"
+        tn.write(payload)
+        out = tn.expect([b"vyos@vyos:~\$"], timeout=10)
+        print(out[0])
+        print(out[2].decode("utf-8"))
+
+        tn.write(b"base64 --decode config.b64 > config.sh\n")
+        out = tn.expect([b"vyos@vyos:~\$"], timeout=10)
+        print(out[0])
+        print(out[2].decode("utf-8"))
+
+        tn.write(b"md5sum config.sh\n")
+        out = tn.expect([re.compile(r"[0-9a-f]{32}  config.sh".encode("utf-8"))], 5)
+        if out[0] == -1:
+            warnings.warn("Error generating file MD5 checksum.", RuntimeWarning)
+            return
+        uploaded_checksum = out[1].group().decode("utf-8").split()[0]
+
+        if uploaded_checksum != local_checksum:
+            warnings.warn("Checksums do not match.", RuntimeWarning)
+        else:
+            print("Checksums match.")
+
+        tn.write(b"chmod +x config.sh\n")
+        out = tn.expect([b"vyos@vyos:~\$"], timeout=10)
+        print(out[0])
+        print(out[2].decode("utf-8"))
+
+        tn.write(b"./config.sh\n")
+        out = tn.expect([b"vyos@vyos:~\$"], timeout=60)
+        print(out[0])
+        print(out[2].decode("utf-8"))
+
+        tn.write(b"poweroff\n")
+        out = tn.expect([b"Are you sure you want to poweroff this system"], timeout=10)
+        print(out[0])
+        print(out[2].decode("utf-8"))
+
+        tn.write(b"y\n")
 
 
 check_resources()
