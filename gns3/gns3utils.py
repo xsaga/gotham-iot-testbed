@@ -1,3 +1,5 @@
+"""Functions to automate network topology creation/manipulation etc. using the GNS3 API."""
+
 import base64
 import configparser
 import hashlib
@@ -71,7 +73,7 @@ def read_local_gns3_config():
     return config["Server"].get("host"), config["Server"].getint("port"), config["Server"].getboolean("auth"), config["Server"].get("user"), config["Server"].get("password")
 
 
-def get_static_interface_config_file(iface: str, address: str, netmask: str, gateway: str, nameserver: Optional[str]) -> str:
+def get_static_interface_config_file(iface: str, address: str, netmask: str, gateway: str, nameserver: Optional[str] = None) -> str:
     """Configuration file for a static network interface."""
     if nameserver is None:
         nameserver = gateway

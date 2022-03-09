@@ -1,3 +1,5 @@
+"""Create iot simulation topology."""
+
 import ipaddress
 import json
 import time
@@ -58,13 +60,6 @@ router_template_id = template_id_from_name(templates, "VyOS 1.3.0")
 assert router_template_id
 switch_template_id = template_id_from_name(templates, "Open vSwitch")
 assert switch_template_id
-
-mqtt_device_t1_template_id = template_id_from_name(templates, "mqtt-device-t1")
-assert mqtt_device_t1_template_id
-mqtt_device_t2_template_id = template_id_from_name(templates, "mqtt-device-t2")
-assert mqtt_device_t2_template_id
-coap_device_t1_template_id = template_id_from_name(templates, "coap-device-t1")
-assert coap_device_t1_template_id
 
 ############
 # TOPOLOGY #
@@ -142,23 +137,3 @@ for i in [-2, 0, 2]:
     create_link(server, project, rez["node_id"], 0, sez["node_id"], 0)
     routers_east_zone.append(rez)
     coords_east_zone.append(coord_rez)
-
-# -1900, -400
-
-cluster_mqtt1, coord = create_cluster_of_devices(server, project, 50, -1900, -300, switch_template_id, mqtt_device_t1_template_id, ipaddress.IPv4Address("192.168.10.1"))
-cluster_mqtt2, coord = create_cluster_of_devices(server, project, 50, coord[2]+2*project.grid_unit, coord[1], switch_template_id, mqtt_device_t2_template_id, ipaddress.IPv4Address("192.168.20.1"))
-cluster_coap1, coord = create_cluster_of_devices(server, project, 50, coord[2]+2*project.grid_unit, coord[1], switch_template_id, coap_device_t1_template_id, ipaddress.IPv4Address("192.168.30.1"))
-
-start_capture(server, project, cluster_mqtt1["devices_link_id"])
-start_capture(server, project, cluster_mqtt2["devices_link_id"])
-start_capture(server, project, cluster_coap1["devices_link_id"])
-
-# get_nodes_id_by_name_regexp(server, project, re.compile("openvswitch.*", re.IGNORECASE))
-# get_links_id_from_node_connected_to_name_regexp(server, project, '4a2a6591-7b87-4c8d-948f-50eed4cd2c61', re.compile("mqtt-device-t1.*", re.IGNORECASE))
-
-# --------------------------------------------
-# start_all_switches(server, project)
-# click play button in GNS3 |>
-# check coap cloud
-# start_capture_all_iot_links(server, project)
-# stop_capture_all_iot_links(server, project)
