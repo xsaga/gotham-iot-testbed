@@ -152,11 +152,16 @@ def template_id_from_name(template: List[Dict[str, Any]], name: str) -> Optional
     return None
 
 
+def get_all_nodes(server: Server, project: Project) -> List[Dict[str, Any]]:
+    """Get all nodes in a GNS3 project."""
+    req = requests.get(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/nodes", auth=(server.user, server.password))
+    req.raise_for_status()
+    return req.json()
+
+
 def get_nodes_id_by_name_regexp(server: Server, project: Project, name_regexp: Pattern) -> Optional[List[Item]]:
     """Get the list of all node IDs that match a node name regular expression."""
-    r = requests.get(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/nodes", auth=(server.user, server.password))
-    r.raise_for_status()
-    nodes: List[Dict[str, Any]] = r.json()
+    nodes = get_all_nodes(server, project)
     nodes_filtered = list(filter(lambda n: name_regexp.match(n["name"]), nodes))
     return [Item(n["name"], n["node_id"]) for n in nodes_filtered]
 

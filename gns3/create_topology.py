@@ -1,5 +1,6 @@
 """Create iot simulation topology."""
 
+import sys
 import time
 
 from gns3utils import *
@@ -21,6 +22,10 @@ else:
     print("Created project ", project)
 
 open_project_if_closed(server, project)
+
+if len(get_all_nodes(server, project)) > 0:
+    print("Project is not empty!")
+    sys.exit(1)
 
 # Create the templates manually using the GNS3 GUI
 # get templates
