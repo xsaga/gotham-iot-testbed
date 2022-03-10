@@ -101,7 +101,7 @@ for i in [-3, -1, 1, 3]:
     coords_west_zone.append(coord)
 
 # router installation and configuration
-rwest_configs = [f"../router/locations/router_loc{i}" for i in range(1, 5)]
+rwest_configs = [f"../router/locations/router_loc{i}.sh" for i in range(1, 5)]
 
 for router_node, config in zip(routers_west_zone, rwest_configs):
     print(f"Installing {router_node['name']}")
@@ -132,7 +132,7 @@ for i in [-2, 0, 2]:
     coords_east_zone.append(coord)
 
 # router installation and configuration
-reast_configs = [f"../router/locations/router_loc{i}" for i in range(5, 8)]
+reast_configs = [f"../router/locations/router_loc{i}.sh" for i in range(5, 8)]
 
 for router_node, config in zip(routers_west_zone, reast_configs):
     print(f"Installing {router_node['name']}")
