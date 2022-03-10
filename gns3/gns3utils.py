@@ -73,6 +73,48 @@ def read_local_gns3_config():
     return config["Server"].get("host"), config["Server"].getint("port"), config["Server"].getboolean("auth"), config["Server"].get("user"), config["Server"].get("password")
 
 
+def check_server_version(server: Server) -> str:
+    """Check GNS3 server version."""
+    req = requests.get(f"http://{server.addr}:{server.port}/v2/version", auth=(server.user, server.password))
+    req.raise_for_status()
+    return req.json()["version"]
+
+
+def get_all_projects(server: Server) -> List[Dict[str, Any]]:
+    """Get all the projects in the GNS3 server."""
+    req = requests.get(f"http://{server.addr}:{server.port}/v2/projects", auth=(server.user, server.password))
+    req.raise_for_status()
+    return req.json()
+
+
+def get_project_by_name(server: Server, name: str) -> Optional[Dict[str, Any]]:
+    """Get GNS3 project by name."""
+    projects = get_all_projects(server)
+    filtered_project = list(filter(lambda x: x["name"]==name, projects))
+    if not filtered_project:
+        return None
+    filtered_project = filtered_project[0]
+    return Project(name=filtered_project["name"], id=filtered_project["project_id"], grid_unit=int(filtered_project["grid_size"]))
+
+
+def create_project(server: Server, name: str, height: int, width: int):
+    """Create GNS3 project."""
+    # http://api.gns3.net/en/2.2/api/v2/controller/project/projects.html
+    # Coordinate 0,0 is located in the center of the project
+    payload_project = {"name": name, "show_grid": True, "scene_height": height, "scene_width": width}
+    req = requests.post(f"http://{server.addr}:{server.port}/v2/projects", data=json.dumps(payload_project), auth=(server.user, server.password))
+    req.raise_for_status()
+    req = req.json()
+    return Project(name=req["name"], id=req["project_id"], grid_unit=int(req["grid_size"]))
+
+
+def get_all_templates(server: Server) -> List[Dict[str, Any]]:
+    """Get all the defined GNS3 templates."""
+    req = requests.get(f"http://{server.addr}:{server.port}/v2/templates", auth=(server.user, server.password))
+    req.raise_for_status()
+    return req.json()
+
+
 def get_static_interface_config_file(iface: str, address: str, netmask: str, gateway: str, nameserver: Optional[str] = None) -> str:
     """Configuration file for a static network interface."""
     if nameserver is None:

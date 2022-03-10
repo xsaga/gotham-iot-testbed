@@ -1,10 +1,6 @@
 """Create iot simulation topology."""
 
-import ipaddress
-import json
 import time
-
-import requests
 
 from gns3utils import *
 
@@ -14,46 +10,19 @@ check_resources()
 check_local_gns3_config()
 server = Server(*read_local_gns3_config())
 
-req_version = requests.get(f"http://{server.addr}:{server.port}/v2/version", auth=(server.user, server.password))
-req_version.raise_for_status()
-print(req_version.json())
+check_server_version(server)
 
-req_projects = requests.get(f"http://{server.addr}:{server.port}/v2/projects", auth=(server.user, server.password))
-req_projects.raise_for_status()
-projects: List[Dict[str, Any]] = req_projects.json()
-print(len(projects), " projects")
-if projects:
-    for p in projects:
-        print(f"Name='{p['name']}', ID='{p['project_id']}'")
+project = get_project_by_name(server, PROJECT_NAME)
 
-filtered_projects = list(filter(lambda x: x["name"]==PROJECT_NAME, projects))
-if filtered_projects:
-    p = filtered_projects[0]
-    project = Project(name=p["name"], id=p["project_id"], grid_unit=int(p["grid_size"]*1.4))
+if project:
     print(f"Project {PROJECT_NAME} exists. ", project)
 else:
-    # create the project
-    # http://api.gns3.net/en/2.2/api/v2/controller/project/projects.html
-    # Coordinate 0,0 is located in the center of the project
-    payload_project = {"name": PROJECT_NAME, "show_grid": True, "scene_height": 2000, "scene_width": 4000}
-    r = requests.post(f"http://{server.addr}:{server.port}/v2/projects", data=json.dumps(payload_project), auth=(server.user, server.password))
-    r.raise_for_status()
-    p = r.json()
-    project = Project(name=p["name"], id=p["project_id"], grid_unit=int(p["grid_size"]*1.4))
-    assert project.name == PROJECT_NAME
+    project = create_project(server, PROJECT_NAME, 2000, 4000)
     print("Created project ", project)
 
-# open project if closed
-if p["status"] == "closed":
-    r = requests.post(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/open", data={}, auth=(server.user, server.password))
-    r.raise_for_status()
-    assert r.json()["status"] == "opened"
-
-# Por ahora crear los templates en GNS3 GUI
+# Create the templates manually using the GNS3 GUI
 # get templates
-r = requests.get(f"http://{server.addr}:{server.port}/v2/templates", auth=(server.user, server.password))
-r.raise_for_status()
-templates = r.json()
+templates = get_all_templates(server)
 
 # get template ids
 router_template_id = template_id_from_name(templates, "VyOS 1.3.0")
