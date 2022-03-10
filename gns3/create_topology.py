@@ -134,7 +134,7 @@ for i in [-2, 0, 2]:
 # router installation and configuration
 reast_configs = [f"../router/locations/router_loc{i}.sh" for i in range(5, 8)]
 
-for router_node, config in zip(routers_west_zone, reast_configs):
+for router_node, config in zip(routers_east_zone, reast_configs):
     print(f"Installing {router_node['name']}")
     hostname, port = get_node_telnet_host_port(server, project, router_node["node_id"])
     terminal_cmd = f"konsole -e telnet {hostname} {port}"
