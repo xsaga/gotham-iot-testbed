@@ -7,6 +7,7 @@ import time
 from gns3utils import *
 
 PROJECT_NAME = "iot_sim"
+AUTO_CONFIGURE_ROUTERS = True
 
 check_resources()
 check_local_gns3_config()
@@ -57,9 +58,9 @@ assert debug_template_id
 #            |
 #  -+        v Y +     ++
 
-coord_rnorth = Position(0, -300)
-coord_rwest = Position(-150, -75)
-coord_reast = Position(150, -75)
+coord_rnorth = Position(0, 0)
+coord_rwest = Position(coord_rnorth.x - project.grid_unit * 2, coord_rnorth.y + project.grid_unit * 4)
+coord_reast = Position(coord_rnorth.x + project.grid_unit * 2, coord_rnorth.y + project.grid_unit * 4)
 
 # backbone routers
 rnorth = create_node(server, project, coord_rnorth.x, coord_rnorth.y, router_template_id)
@@ -75,23 +76,24 @@ backbone_routers = [rnorth, rwest, reast]
 backbone_configs = ["../router/backbone/router_north.sh",
                     "../router/backbone/router_west.sh",
                     "../router/backbone/router_east.sh"]
-for router_node, config in zip(backbone_routers, backbone_configs):
-    print(f"Installing {router_node['name']}")
-    hostname, port = get_node_telnet_host_port(server, project, router_node["node_id"])
-    terminal_cmd = f"konsole -e telnet {hostname} {port}"
-    start_node(server, project, router_node["node_id"])
-    install_vyos_image_on_node(router_node["node_id"], hostname, port, pre_exec=terminal_cmd)
-    # time to close the terminals, else Telnet throws EOF errors
-    time.sleep(10)
-    print(f"Configuring {router_node['name']} with {config}")
-    start_node(server, project, router_node["node_id"])
-    configure_vyos_image_on_node(router_node["node_id"], hostname, port, config, pre_exec=terminal_cmd)
-    time.sleep(10)
+if AUTO_CONFIGURE_ROUTERS:
+    for router_node, config in zip(backbone_routers, backbone_configs):
+        print(f"Installing {router_node['name']}")
+        hostname, port = get_node_telnet_host_port(server, project, router_node["node_id"])
+        terminal_cmd = f"konsole -e telnet {hostname} {port}"
+        start_node(server, project, router_node["node_id"])
+        install_vyos_image_on_node(router_node["node_id"], hostname, port, pre_exec=terminal_cmd)
+        # time to close the terminals, else Telnet throws EOF errors
+        time.sleep(10)
+        print(f"Configuring {router_node['name']} with {config}")
+        start_node(server, project, router_node["node_id"])
+        configure_vyos_image_on_node(router_node["node_id"], hostname, port, config, pre_exec=terminal_cmd)
+        time.sleep(10)
 
 # backbone switches
-coord_snorth = Position(coord_rnorth.x, coord_rnorth.y - 150)
-coord_swest = Position(coord_rwest.x - 300, coord_rwest.y)
-coord_seast = Position(coord_reast.x + 300, coord_reast.y)
+coord_snorth = Position(coord_rnorth.x, coord_rnorth.y - project.grid_unit * 2)
+coord_swest = Position(coord_rwest.x - project.grid_unit * 8, coord_rwest.y)
+coord_seast = Position(coord_reast.x + project.grid_unit * 8, coord_reast.y)
 
 snorth = create_node(server, project, coord_snorth.x, coord_snorth.y, switch_template_id)
 swest = create_node(server, project, coord_swest.x, coord_swest.y, switch_template_id)
@@ -106,12 +108,12 @@ routers_west_zone = []
 switches_west_zone = []
 coords_west_zone = []
 switch_freeport = 1
-for i in [-3, -1, 1, 3]:
-    coord = Position(coord_swest.x + 150*i, coord_swest.y + 150)
+for i in [-6, -2, 2, 6]:
+    coord = Position(coord_swest.x + project.grid_unit * i, coord_swest.y + project.grid_unit * 3)
     rzone = create_node(server, project, coord.x, coord.y, router_template_id)
     create_link(server, project, rzone["node_id"], 1, swest["node_id"], switch_freeport)
     switch_freeport += 1
-    coord = Position(coord.x, coord.y + 150)
+    coord = Position(coord.x, coord.y + project.grid_unit * 2)
     szone = create_node(server, project, coord.x, coord.y, switch_template_id)
     create_link(server, project, rzone["node_id"], 0, szone["node_id"], 0)
     routers_west_zone.append(rzone)
@@ -120,31 +122,31 @@ for i in [-3, -1, 1, 3]:
 
 # router installation and configuration
 rwest_configs = [f"../router/locations/router_loc{i}.sh" for i in range(1, 5)]
-
-for router_node, config in zip(routers_west_zone, rwest_configs):
-    print(f"Installing {router_node['name']}")
-    hostname, port = get_node_telnet_host_port(server, project, router_node["node_id"])
-    terminal_cmd = f"konsole -e telnet {hostname} {port}"
-    start_node(server, project, router_node["node_id"])
-    install_vyos_image_on_node(router_node["node_id"], hostname, port, pre_exec=terminal_cmd)
-    # time to close the terminals, else Telnet throws EOF errors
-    time.sleep(10)
-    print(f"Configuring {router_node['name']} with {config}")
-    start_node(server, project, router_node["node_id"])
-    configure_vyos_image_on_node(router_node["node_id"], hostname, port, config, pre_exec=terminal_cmd)
-    time.sleep(10)
+if AUTO_CONFIGURE_ROUTERS:
+    for router_node, config in zip(routers_west_zone, rwest_configs):
+        print(f"Installing {router_node['name']}")
+        hostname, port = get_node_telnet_host_port(server, project, router_node["node_id"])
+        terminal_cmd = f"konsole -e telnet {hostname} {port}"
+        start_node(server, project, router_node["node_id"])
+        install_vyos_image_on_node(router_node["node_id"], hostname, port, pre_exec=terminal_cmd)
+        # time to close the terminals, else Telnet throws EOF errors
+        time.sleep(10)
+        print(f"Configuring {router_node['name']} with {config}")
+        start_node(server, project, router_node["node_id"])
+        configure_vyos_image_on_node(router_node["node_id"], hostname, port, config, pre_exec=terminal_cmd)
+        time.sleep(10)
 
 # east zone routers and switches
 routers_east_zone = []
 switches_east_zone = []
 coords_east_zone = []
 switch_freeport = 1
-for i in [-2, 0, 2]:
-    coord = Position(coord_seast.x + 150*i, coord_seast.y + 150)
+for i in [-4, 0, 4]:
+    coord = Position(coord_seast.x + project.grid_unit * i, coord_seast.y + project.grid_unit * 3)
     rzone = create_node(server, project, coord.x, coord.y, router_template_id)
     create_link(server, project, rzone["node_id"], 1, seast["node_id"], switch_freeport)
     switch_freeport += 1
-    coord = Position(coord.x, coord.y + 150)
+    coord = Position(coord.x, coord.y + project.grid_unit * 2)
     szone = create_node(server, project, coord.x, coord.y, switch_template_id)
     create_link(server, project, rzone["node_id"], 0, szone["node_id"], 0)
     routers_east_zone.append(rzone)
@@ -153,29 +155,29 @@ for i in [-2, 0, 2]:
 
 # router installation and configuration
 reast_configs = [f"../router/locations/router_loc{i}.sh" for i in range(5, 8)]
-
-for router_node, config in zip(routers_east_zone, reast_configs):
-    print(f"Installing {router_node['name']}")
-    hostname, port = get_node_telnet_host_port(server, project, router_node["node_id"])
-    terminal_cmd = f"konsole -e telnet {hostname} {port}"
-    start_node(server, project, router_node["node_id"])
-    install_vyos_image_on_node(router_node["node_id"], hostname, port, pre_exec=terminal_cmd)
-    # time to close the terminals, else Telnet throws EOF errors
-    time.sleep(10)
-    print(f"Configuring {router_node['name']} with {config}")
-    start_node(server, project, router_node["node_id"])
-    configure_vyos_image_on_node(router_node["node_id"], hostname, port, config, pre_exec=terminal_cmd)
-    time.sleep(10)
+if AUTO_CONFIGURE_ROUTERS:
+    for router_node, config in zip(routers_east_zone, reast_configs):
+        print(f"Installing {router_node['name']}")
+        hostname, port = get_node_telnet_host_port(server, project, router_node["node_id"])
+        terminal_cmd = f"konsole -e telnet {hostname} {port}"
+        start_node(server, project, router_node["node_id"])
+        install_vyos_image_on_node(router_node["node_id"], hostname, port, pre_exec=terminal_cmd)
+        # time to close the terminals, else Telnet throws EOF errors
+        time.sleep(10)
+        print(f"Configuring {router_node['name']} with {config}")
+        start_node(server, project, router_node["node_id"])
+        configure_vyos_image_on_node(router_node["node_id"], hostname, port, config, pre_exec=terminal_cmd)
+        time.sleep(10)
 
 # debug clients
-d_n1 = create_node(server, project, coord_snorth.x, coord_snorth.y - 150, debug_template_id)
-d_w1 = create_node(server, project, coords_west_zone[0].x, coords_west_zone[0].y + 150, debug_template_id)
-d_w2 = create_node(server, project, coords_west_zone[1].x, coords_west_zone[1].y + 150, debug_template_id)
-d_w3 = create_node(server, project, coords_west_zone[2].x, coords_west_zone[2].y + 150, debug_template_id)
-d_w4 = create_node(server, project, coords_west_zone[3].x, coords_west_zone[3].y + 150, debug_template_id)
-d_e1 = create_node(server, project, coords_east_zone[0].x, coords_east_zone[0].y + 150, debug_template_id)
-d_e2 = create_node(server, project, coords_east_zone[1].x, coords_east_zone[1].y + 150, debug_template_id)
-d_e3 = create_node(server, project, coords_east_zone[2].x, coords_east_zone[2].y + 150, debug_template_id)
+d_n1 = create_node(server, project, coord_snorth.x, coord_snorth.y - project.grid_unit * 2, debug_template_id)
+d_w1 = create_node(server, project, coords_west_zone[0].x, coords_west_zone[0].y + project.grid_unit * 2, debug_template_id)
+d_w2 = create_node(server, project, coords_west_zone[1].x, coords_west_zone[1].y + project.grid_unit * 2, debug_template_id)
+d_w3 = create_node(server, project, coords_west_zone[2].x, coords_west_zone[2].y + project.grid_unit * 2, debug_template_id)
+d_w4 = create_node(server, project, coords_west_zone[3].x, coords_west_zone[3].y + project.grid_unit * 2, debug_template_id)
+d_e1 = create_node(server, project, coords_east_zone[0].x, coords_east_zone[0].y + project.grid_unit * 2, debug_template_id)
+d_e2 = create_node(server, project, coords_east_zone[1].x, coords_east_zone[1].y + project.grid_unit * 2, debug_template_id)
+d_e3 = create_node(server, project, coords_east_zone[2].x, coords_east_zone[2].y + project.grid_unit * 2, debug_template_id)
 
 create_link(server, project, snorth["node_id"], 1, d_n1["node_id"], 0)
 create_link(server, project, switches_west_zone[0]["node_id"], 1, d_w1["node_id"], 0)
