@@ -94,7 +94,7 @@ for i in [-3, -1, 1, 3]:
     rzone = create_node(server, project, coord.x, coord.y, router_template_id)
     create_link(server, project, rzone["node_id"], 1, swest["node_id"], switch_freeport)
     switch_freeport += 1
-    coord.y = coord.y + 150
+    coord = Position(coord.x, coord.y + 150)
     szone = create_node(server, project, coord.x, coord.y, switch_template_id)
     create_link(server, project, rzone["node_id"], 0, szone["node_id"], 0)
     routers_west_zone.append(rzone)
@@ -125,7 +125,7 @@ for i in [-2, 0, 2]:
     rzone = create_node(server, project, coord.x, coord.y, router_template_id)
     create_link(server, project, rzone["node_id"], 1, seast["node_id"], switch_freeport)
     switch_freeport += 1
-    coord.y = coord.y + 150
+    coord = Position(coord.x, coord.y + 150)
     szone = create_node(server, project, coord.x, coord.y, switch_template_id)
     create_link(server, project, rzone["node_id"], 0, szone["node_id"], 0)
     routers_east_zone.append(rzone)
