@@ -331,28 +331,31 @@ def stop_capture(server, project, link_ids):
         time.sleep(0.3)
 
 
-def start_all_switches(server: Server, project: Project, switches_pattern : Pattern=re.compile("openvswitch.*", re.IGNORECASE)) -> None:
+def start_all_nodes_by_name_regexp(server: Server, project: Project, node_pattern: Pattern, sleeptime: float = 0.1) -> None:
+    """Start all nodes that match a name regexp."""
+    nodes = get_nodes_id_by_name_regexp(server, project, node_pattern)
+    if nodes:
+        print(f"found {len(nodes)} nodes")
+        for node in nodes:
+            print(f"Starting {node.name}... ", end="", flush=True)
+            start_node(server, project, node.id)
+            print("OK")
+            time.sleep(sleeptime)
+
+
+def start_all_switches(server: Server, project: Project, switches_pattern : Pattern=re.compile("openvswitch.*", re.IGNORECASE), sleeptime: float = 1.0) -> None:
     """Start all network switch nodes (OpenvSwitch switches)."""
-    switches = get_nodes_id_by_name_regexp(server, project, switches_pattern)
-    if switches:
-        print(f"found {len(switches)} switches")
-        for sw in switches:
-            print(f"Starting {sw.name}... ", end="", flush=True)
-            start_node(server, project, sw.id)
-            print("OK")
-            time.sleep(0.3)
+    start_all_nodes_by_name_regexp(server, project, switches_pattern, sleeptime)
 
 
-def start_all_routers(server: Server, project: Project, routers_pattern : Pattern=re.compile("vyos.*", re.IGNORECASE)) -> None:
+def start_all_routers(server: Server, project: Project, routers_pattern : Pattern=re.compile("vyos.*", re.IGNORECASE), sleeptime: float = 60.0) -> None:
     """Start all router nodes (VyOS routers)."""
-    routers = get_nodes_id_by_name_regexp(server, project, routers_pattern)
-    if routers:
-        print(f"found {len(routers)} routers")
-        for r in routers:
-            print(f"Starting {r.name}... ", end="", flush=True)
-            start_node(server, project, r.id)
-            print("OK")
-            time.sleep(0.3)
+    start_all_nodes_by_name_regexp(server, project, routers_pattern, sleeptime)
+
+
+def start_all_iot(server: Server, project: Project, iot_pattern : Pattern=re.compile("iotsim-.*", re.IGNORECASE)) -> None:
+    """Start all iotsim-* docker nodes."""
+    start_all_nodes_by_name_regexp(server, project, iot_pattern)
 
 
 def stop_all_switches(server: Server, project: Project, switches_pattern : Pattern=re.compile("openvswitch.*", re.IGNORECASE)) -> None:
