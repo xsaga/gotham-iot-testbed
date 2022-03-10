@@ -246,6 +246,15 @@ def create_link(server: Server, project: Project, node1_id: str, node1_port: int
     return r.json()
 
 
+def set_node_network_interfaces(server: Server, project: Project, node_id: str, iface_name: str, ip_iface: ipaddress.IPv4Interface, gateway: str, nameserver: Optional[str] = None) -> None:
+    """Configure the /etc/network/interfaces file for the node."""
+    if ip_iface.netmask == ipaddress.IPv4Address("255.255.255.255"):
+        warnings.warn(f"Interface netmask is set to {ip_iface.netmask}", RuntimeWarning)
+    payload = get_static_interface_config_file(iface_name, str(ip_iface.ip), str(ip_iface.netmask), gateway, nameserver)
+    r = requests.post(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/nodes/{node_id}/files/etc/network/interfaces", data=payload, auth=(server.user, server.password))
+    r.raise_for_status()
+
+
 def create_cluster_of_devices(server, project, num_devices, start_x, start_y, switch_template_id, device_template_id, start_ip, devices_per_row=10):
     assert num_devices < 64  # parece que el switch por defecto no puede tener mas de 64 interfaces activas. Error while creating link: Dynamips error when running command ...
     # create cluster switch
