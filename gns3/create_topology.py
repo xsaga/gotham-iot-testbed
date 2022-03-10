@@ -20,6 +20,8 @@ else:
     project = create_project(server, PROJECT_NAME, 2000, 4000)
     print("Created project ", project)
 
+open_project_if_closed(server, project)
+
 # Create the templates manually using the GNS3 GUI
 # get templates
 templates = get_all_templates(server)

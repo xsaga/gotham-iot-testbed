@@ -108,6 +108,19 @@ def create_project(server: Server, name: str, height: int, width: int):
     return Project(name=req["name"], id=req["project_id"], grid_unit=int(req["grid_size"]))
 
 
+def open_project_if_closed(server: Server, project: Project):
+    """If the GNS3 project is closed, open it."""
+    req = requests.get(f"http://{server.addr}:{server.port}/v2/projects/{project.id}", auth=(server.user, server.password))
+    req.raise_for_status()
+    if req.json()["status"] == "opened":
+        print(f"Project {project.name} is already open.")
+        return
+    req = requests.post(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/open", auth=(server.user, server.password))
+    req.raise_for_status()
+    print(f"Project {project.name} {req.json()['status']}.")
+    assert req.json()["status"] == "opened"
+
+
 def get_all_templates(server: Server) -> List[Dict[str, Any]]:
     """Get all the defined GNS3 templates."""
     req = requests.get(f"http://{server.addr}:{server.port}/v2/templates", auth=(server.user, server.password))
