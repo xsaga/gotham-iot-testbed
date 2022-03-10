@@ -1,5 +1,6 @@
 """Create iot simulation topology."""
 
+import ipaddress
 import sys
 import time
 
@@ -36,10 +37,25 @@ router_template_id = template_id_from_name(templates, "VyOS 1.3.0")
 assert router_template_id
 switch_template_id = template_id_from_name(templates, "Open vSwitch")
 assert switch_template_id
+debug_template_id = template_id_from_name(templates, "iotsim-debug-client")
+assert debug_template_id
 
 ############
 # TOPOLOGY #
 ############
+# Coordinates:
+#
+#            ^
+#  --        | Y -    +-
+#            |
+#            |
+#  X -       |(0,0)   X +
+# <----------+---------->
+#            |
+#            |
+#            |
+#            |
+#  -+        v Y +     ++
 
 coord_rnorth = Position(0, -300)
 coord_rwest = Position(-150, -75)
@@ -87,6 +103,7 @@ create_link(server, project, reast["node_id"], 0, seast["node_id"], 0)
 
 # west zone routers and switches
 routers_west_zone = []
+switches_west_zone = []
 coords_west_zone = []
 switch_freeport = 1
 for i in [-3, -1, 1, 3]:
@@ -98,6 +115,7 @@ for i in [-3, -1, 1, 3]:
     szone = create_node(server, project, coord.x, coord.y, switch_template_id)
     create_link(server, project, rzone["node_id"], 0, szone["node_id"], 0)
     routers_west_zone.append(rzone)
+    switches_west_zone.append(szone)
     coords_west_zone.append(coord)
 
 # router installation and configuration
@@ -118,6 +136,7 @@ for router_node, config in zip(routers_west_zone, rwest_configs):
 
 # east zone routers and switches
 routers_east_zone = []
+switches_east_zone = []
 coords_east_zone = []
 switch_freeport = 1
 for i in [-2, 0, 2]:
@@ -129,6 +148,7 @@ for i in [-2, 0, 2]:
     szone = create_node(server, project, coord.x, coord.y, switch_template_id)
     create_link(server, project, rzone["node_id"], 0, szone["node_id"], 0)
     routers_east_zone.append(rzone)
+    switches_east_zone.append(szone)
     coords_east_zone.append(coord)
 
 # router installation and configuration
@@ -146,3 +166,31 @@ for router_node, config in zip(routers_east_zone, reast_configs):
     start_node(server, project, router_node["node_id"])
     configure_vyos_image_on_node(router_node["node_id"], hostname, port, config, pre_exec=terminal_cmd)
     time.sleep(10)
+
+# debug clients
+d_n1 = create_node(server, project, coord_snorth.x, coord_snorth.y - 150, debug_template_id)
+d_w1 = create_node(server, project, coords_west_zone[0].x, coords_west_zone[0].y + 150, debug_template_id)
+d_w2 = create_node(server, project, coords_west_zone[1].x, coords_west_zone[1].y + 150, debug_template_id)
+d_w3 = create_node(server, project, coords_west_zone[2].x, coords_west_zone[2].y + 150, debug_template_id)
+d_w4 = create_node(server, project, coords_west_zone[3].x, coords_west_zone[3].y + 150, debug_template_id)
+d_e1 = create_node(server, project, coords_east_zone[0].x, coords_east_zone[0].y + 150, debug_template_id)
+d_e2 = create_node(server, project, coords_east_zone[1].x, coords_east_zone[1].y + 150, debug_template_id)
+d_e3 = create_node(server, project, coords_east_zone[2].x, coords_east_zone[2].y + 150, debug_template_id)
+
+create_link(server, project, snorth["node_id"], 1, d_n1["node_id"], 0)
+create_link(server, project, switches_west_zone[0]["node_id"], 1, d_w1["node_id"], 0)
+create_link(server, project, switches_west_zone[1]["node_id"], 1, d_w2["node_id"], 0)
+create_link(server, project, switches_west_zone[2]["node_id"], 1, d_w3["node_id"], 0)
+create_link(server, project, switches_west_zone[3]["node_id"], 1, d_w4["node_id"], 0)
+create_link(server, project, switches_east_zone[0]["node_id"], 1, d_e1["node_id"], 0)
+create_link(server, project, switches_east_zone[1]["node_id"], 1, d_e2["node_id"], 0)
+create_link(server, project, switches_east_zone[2]["node_id"], 1, d_e3["node_id"], 0)
+
+set_node_network_interfaces(server, project, d_n1["node_id"], "eth0", ipaddress.IPv4Interface("192.168.0.2/20"), "192.168.0.1")
+set_node_network_interfaces(server, project, d_w1["node_id"], "eth0", ipaddress.IPv4Interface("192.168.17.10/24"), "192.168.17.1")
+set_node_network_interfaces(server, project, d_w2["node_id"], "eth0", ipaddress.IPv4Interface("192.168.18.10/24"), "192.168.18.1")
+set_node_network_interfaces(server, project, d_w3["node_id"], "eth0", ipaddress.IPv4Interface("192.168.19.10/24"), "192.168.19.1")
+set_node_network_interfaces(server, project, d_w4["node_id"], "eth0", ipaddress.IPv4Interface("192.168.20.10/24"), "192.168.20.1")
+set_node_network_interfaces(server, project, d_e1["node_id"], "eth0", ipaddress.IPv4Interface("192.168.33.10/24"), "192.168.33.1")
+set_node_network_interfaces(server, project, d_e2["node_id"], "eth0", ipaddress.IPv4Interface("192.168.34.10/24"), "192.168.34.1")
+set_node_network_interfaces(server, project, d_e3["node_id"], "eth0", ipaddress.IPv4Interface("192.168.35.10/24"), "192.168.35.1")
