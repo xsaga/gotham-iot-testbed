@@ -15,6 +15,19 @@ import time
 import paho.mqtt.publish as publish
 
 
+config = {"MQTT_BROKER_ADDR": "localhost",
+          "MQTT_TOPIC_PUB": "domotic",
+          "MQTT_QOS": 0,
+          "TLS": "",
+          "DATASET": "/NEW-DATA-1.T15.txt.xz",
+          "SLEEP_TIME": 900,
+          "SLEEP_TIME_SD": 10,
+          "PING_SLEEP_TIME": 60,
+          "PING_SLEEP_TIME_SD": 1,
+          "ACTIVE_TIME": 60,
+          "INACTIVE_TIME": 0}
+
+
 def readloop(file, openfunc=open, skipfirst=True):
     """Read a file line by line. If EOF, start from beginning."""
     with openfunc(file, "r") as f:
@@ -267,18 +280,6 @@ def main(conf):
     print("[  main   ] exit")
 
 if __name__ == "__main__":
-    config = {"MQTT_BROKER_ADDR": "localhost",
-              "MQTT_TOPIC_PUB": "domotic",
-              "MQTT_QOS": 0,
-              "TLS": "",
-              "DATASET": "/NEW-DATA-1.T15.txt.xz",
-              "SLEEP_TIME": 900,
-              "SLEEP_TIME_SD": 10,
-              "PING_SLEEP_TIME": 60,
-              "PING_SLEEP_TIME_SD": 1,
-              "ACTIVE_TIME": 60,
-              "INACTIVE_TIME": 0}
-
     for key in config.keys():
         try:
             config[key] = os.environ[key]

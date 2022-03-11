@@ -17,6 +17,19 @@ import time
 import paho.mqtt.client as mqtt
 
 
+config = {"MQTT_BROKER_ADDR": "localhost",
+          "MQTT_TOPIC_PUB": "vibration",
+          "MQTT_QOS": 0,
+          "MQTT_KEEPALIVE": 30,
+          "TLS": "",
+          "SLEEP_TIME": 0.5,
+          "SLEEP_TIME_SD": 0.01,
+          "PING_SLEEP_TIME": 600,
+          "PING_SLEEP_TIME_SD": 10,
+          "ACTIVE_TIME": 600,
+          "INACTIVE_TIME": 300}
+
+
 def on_connect(client, userdata, flags, rc):
     """Called when the broker responds to our connection request."""
     print(f"[telemetry] connected with code {rc}: {mqtt.connack_string(rc)}")
@@ -189,18 +202,6 @@ def main(conf):
     print("[  main   ] exit")
 
 if __name__ == "__main__":
-    config = {"MQTT_BROKER_ADDR": "localhost",
-              "MQTT_TOPIC_PUB": "vibration",
-              "MQTT_QOS": 0,
-              "MQTT_KEEPALIVE": 30,
-              "TLS": "",
-              "SLEEP_TIME": 0.5,
-              "SLEEP_TIME_SD": 0.01,
-              "PING_SLEEP_TIME": 600,
-              "PING_SLEEP_TIME_SD": 10,
-              "ACTIVE_TIME": 600,
-              "INACTIVE_TIME": 300}
-
     for key in config.keys():
         try:
             config[key] = os.environ[key]

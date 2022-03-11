@@ -16,6 +16,18 @@ import time
 import paho.mqtt.publish as publish
 
 
+config = {"MQTT_BROKER_ADDR": "localhost",
+          "MQTT_TOPIC_PUB": "maintenance",
+          "MQTT_QOS": 0,
+          "TLS": "",
+          "SLEEP_TIME": 10,
+          "SLEEP_TIME_SD": 0.1,
+          "PING_SLEEP_TIME": 60,
+          "PING_SLEEP_TIME_SD": 1,
+          "ACTIVE_TIME": 60,
+          "INACTIVE_TIME": 0}
+
+
 def readloop(file, openfunc=open, skipfirst=True):
     """Read a file line by line. If EOF, start from beginning."""
     with openfunc(file, "r") as f:
@@ -212,17 +224,6 @@ def main(conf):
     print("[  main   ] exit")
 
 if __name__ == "__main__":
-    config = {"MQTT_BROKER_ADDR": "localhost",
-              "MQTT_TOPIC_PUB": "maintenance",
-              "MQTT_QOS": 0,
-              "TLS": "",
-              "SLEEP_TIME": 10,
-              "SLEEP_TIME_SD": 0.1,
-              "PING_SLEEP_TIME": 60,
-              "PING_SLEEP_TIME_SD": 1,
-              "ACTIVE_TIME": 60,
-              "INACTIVE_TIME": 0}
-
     for key in config.keys():
         try:
             config[key] = os.environ[key]

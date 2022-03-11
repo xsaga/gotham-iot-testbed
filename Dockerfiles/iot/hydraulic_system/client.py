@@ -21,6 +21,19 @@ from pathlib import Path
 import paho.mqtt.client as mqtt
 
 
+config = {"MQTT_BROKER_ADDR": "localhost",
+          "MQTT_TOPIC_PUB": "hydraulic",
+          "MQTT_QOS": 0,
+          "MQTT_KEEPALIVE": 30,
+          "TLS": "",
+          "SLEEP_TIME": 60,
+          "SLEEP_TIME_SD": 1,
+          "PING_SLEEP_TIME": 600,
+          "PING_SLEEP_TIME_SD": 10,
+          "ACTIVE_TIME": 60,
+          "INACTIVE_TIME": 0}
+
+
 def on_connect(client, userdata, flags, rc):
     """Called when the broker responds to our connection request."""
     print(f"[telemetry] connected with code {rc}: {mqtt.connack_string(rc)}")
@@ -228,18 +241,6 @@ def main(conf):
     print("[  main   ] exit")
 
 if __name__ == "__main__":
-    config = {"MQTT_BROKER_ADDR": "localhost",
-              "MQTT_TOPIC_PUB": "hydraulic",
-              "MQTT_QOS": 0,
-              "MQTT_KEEPALIVE": 30,
-              "TLS": "",
-              "SLEEP_TIME": 60,
-              "SLEEP_TIME_SD": 1,
-              "PING_SLEEP_TIME": 600,
-              "PING_SLEEP_TIME_SD": 10,
-              "ACTIVE_TIME": 60,
-              "INACTIVE_TIME": 0}
-
     for key in config.keys():
         try:
             config[key] = os.environ[key]

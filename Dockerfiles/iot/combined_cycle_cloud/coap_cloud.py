@@ -14,6 +14,16 @@ import time
 from typing import List
 
 
+config = {"COAP_ADDR_LIST": "",
+          "PSK": "",
+          "SLEEP_TIME": 300,
+          "SLEEP_TIME_SD": 10,
+          "PING_SLEEP_TIME": 600,
+          "PING_SLEEP_TIME_SD": 10,
+          "ACTIVE_TIME": 60,
+          "INACTIVE_TIME": 0}
+
+
 def iprange(start_addr: str, end_addr: str = None) -> List[ipaddress.IPv4Address]:
     """Return a list of IPv4 addresses between two addresses, or itself if end_addr is None."""
     if not end_addr:
@@ -161,15 +171,6 @@ def main(conf):
     print("[  main  ] exit")
 
 if __name__ == "__main__":
-    config = {"COAP_ADDR_LIST": "",
-              "PSK": "",
-              "SLEEP_TIME": 300,
-              "SLEEP_TIME_SD": 10,
-              "PING_SLEEP_TIME": 600,
-              "PING_SLEEP_TIME_SD": 10,
-              "ACTIVE_TIME": 60,
-              "INACTIVE_TIME": 0}
-
     psk_file = "/opt/psk.txt"
 
     for key in config.keys():
