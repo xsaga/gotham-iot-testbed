@@ -144,11 +144,11 @@ def get_static_interface_config_file(iface: str, address: str, netmask: str, gat
     )
 
 
-def template_id_from_name(template: List[Dict[str, Any]], name: str) -> Optional[str]:
+def get_template_id_from_name(templates: List[Dict[str, Any]], name: str) -> Optional[str]:
     """Get GNS3 template ID from the template name."""
-    for d in template:
-        if d["name"] == name:
-            return d["template_id"]
+    for template in templates:
+        if template["name"] == name:
+            return template["template_id"]
     return None
 
 
@@ -168,26 +168,26 @@ def get_nodes_id_by_name_regexp(server: Server, project: Project, name_regexp: P
 
 def get_node_telnet_host_port(server: Server, project: Project, node_id: str) -> tuple:
     """Get the telnet hostname and port of a node."""
-    r = requests.get(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/nodes/{node_id}", auth=(server.user, server.password))
-    r.raise_for_status()
+    req = requests.get(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/nodes/{node_id}", auth=(server.user, server.password))
+    req.raise_for_status()
     # TODO include checks for console type
-    assert r.json()["console_type"] == "telnet"
-    if r.json()["console_host"] in ("0.0.0.0", "::"):
+    assert req.json()["console_type"] == "telnet"
+    if req.json()["console_host"] in ("0.0.0.0", "::"):
         host = server.addr
     else:
-        host = r.json()["console_host"]
-    return (host, r.json()["console"])
+        host = req.json()["console_host"]
+    return (host, req.json()["console"])
 
 
 def get_links_id_from_node_connected_to_name_regexp(server: Server, project: Project, node_id: str, name_regexp: Pattern) -> Optional[List[Item]]:
     """Get all the link IDs from node node_id connected to other nodes with names that match name_regexp regular expression."""
-    r = requests.get(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/nodes/{node_id}", auth=(server.user, server.password))
-    r.raise_for_status()
-    node_name = r.json()["name"]
+    req = requests.get(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/nodes/{node_id}", auth=(server.user, server.password))
+    req.raise_for_status()
+    node_name = req.json()["name"]
 
-    r = requests.get(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/nodes/{node_id}/links", auth=(server.user, server.password))
-    r.raise_for_status()
-    links = r.json()
+    req = requests.get(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/nodes/{node_id}/links", auth=(server.user, server.password))
+    req.raise_for_status()
+    links = req.json()
     relevant_nodes = get_nodes_id_by_name_regexp(server, project, name_regexp)
 
     def is_link_relevant(link: Dict) -> Optional[Item]:
@@ -212,38 +212,38 @@ def create_node(server: Server, project: Project, start_x: int, start_y: int, no
     if node_name:
         # GNS3 is not updating the name...
         payload["name"] = node_name
-    r = requests.post(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/templates/{node_template_id}", data=json.dumps(payload), auth=(server.user, server.password))
-    r.raise_for_status()
-    return r.json()
+    req = requests.post(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/templates/{node_template_id}", data=json.dumps(payload), auth=(server.user, server.password))
+    req.raise_for_status()
+    return req.json()
 
 
 def start_node(server: Server, project: Project, node_id: str) -> None:
     """Start selected node."""
-    r = requests.post(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/nodes/{node_id}/start", data={}, auth=(server.user, server.password))
-    r.raise_for_status()
+    req = requests.post(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/nodes/{node_id}/start", data={}, auth=(server.user, server.password))
+    req.raise_for_status()
 
 
 def stop_node(server: Server, project: Project, node_id: str) -> None:
     """Stop selected node."""
-    r = requests.post(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/nodes/{node_id}/stop", data={}, auth=(server.user, server.password))
-    r.raise_for_status()
+    req = requests.post(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/nodes/{node_id}/stop", data={}, auth=(server.user, server.password))
+    req.raise_for_status()
 
 
 def delete_node(server: Server, project: Project, node_id: str) -> None:
     """Delete selected node."""
     # check if node is running?
-    r = requests.delete(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/nodes/{node_id}", auth=(server.user, server.password))
-    r.raise_for_status()
+    req = requests.delete(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/nodes/{node_id}", auth=(server.user, server.password))
+    req.raise_for_status()
 
 
 def create_link(server: Server, project: Project, node1_id: str, node1_port: int, node2_id: str, node2_port: int):
     """Create link between two nodes."""
     payload = {"nodes":[{"node_id": node1_id, "adapter_number": node1_port, "port_number": 0},
                         {"node_id": node2_id, "adapter_number": node2_port, "port_number": 0}]}
-    r = requests.post(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/links", data=json.dumps(payload), auth=(server.user, server.password))
-    r.raise_for_status()
+    req = requests.post(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/links", data=json.dumps(payload), auth=(server.user, server.password))
+    req.raise_for_status()
     # TODO rename link node labels
-    return r.json()
+    return req.json()
 
 
 def set_node_network_interfaces(server: Server, project: Project, node_id: str, iface_name: str, ip_iface: ipaddress.IPv4Interface, gateway: str, nameserver: Optional[str] = None) -> None:
@@ -251,28 +251,24 @@ def set_node_network_interfaces(server: Server, project: Project, node_id: str, 
     if ip_iface.netmask == ipaddress.IPv4Address("255.255.255.255"):
         warnings.warn(f"Interface netmask is set to {ip_iface.netmask}", RuntimeWarning)
     payload = get_static_interface_config_file(iface_name, str(ip_iface.ip), str(ip_iface.netmask), gateway, nameserver)
-    r = requests.post(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/nodes/{node_id}/files/etc/network/interfaces", data=payload, auth=(server.user, server.password))
-    r.raise_for_status()
+    req = requests.post(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/nodes/{node_id}/files/etc/network/interfaces", data=payload, auth=(server.user, server.password))
+    req.raise_for_status()
 
 
 def create_cluster_of_devices(server, project, num_devices, start_x, start_y, switch_template_id, device_template_id, start_ip, devices_per_row=10):
-    assert num_devices < 64  # parece que el switch por defecto no puede tener mas de 64 interfaces activas. Error while creating link: Dynamips error when running command ...
+    assert num_devices < 64  # TODO dinamicamente ver el numero de interfaces en el template y calcular (-1 port para el switch/router de arriba)
     # create cluster switch
-    payload = {"x": start_x + int(devices_per_row/2)*project.grid_unit, "y": start_y - project.grid_unit}
     Xi, Yi = start_x, start_y # - project.grid_unit
-    r = requests.post(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/templates/{switch_template_id}", data=json.dumps(payload), auth=(server.user, server.password))
-    r.raise_for_status()
-    switch_node_id = r.json()["node_id"]
+    switch_node = create_node(server, project, start_x + int(devices_per_row/2)*project.grid_unit, start_y - project.grid_unit, switch_template_id)
+    switch_node_id = switch_node["node_id"]
     time.sleep(0.3)
 
     # create device grid
     devices_node_id = []
     dy = 0
     for i in range(num_devices):
-        payload = {"x": start_x + (i%devices_per_row)*project.grid_unit, "y": start_y + dy}
-        r = requests.post(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/templates/{device_template_id}", data=json.dumps(payload), auth=(server.user, server.password))
-        r.raise_for_status()
-        devices_node_id.append(r.json()["node_id"])
+        device_node = create_node(server, project, start_x + (i%devices_per_row)*project.grid_unit, start_y + dy, device_template_id)
+        devices_node_id.append(device_node["node_id"])
         if i%devices_per_row == devices_per_row-1:
             dy += project.grid_unit
         time.sleep(0.3)
@@ -281,32 +277,23 @@ def create_cluster_of_devices(server, project, num_devices, start_x, start_y, sw
     # link devices to the switch
     devices_link_id = []
     for i, dev in enumerate(devices_node_id, start=1):
-        # [!] for "Ethernet switch" (builtin) "adapter_number": 0, "port_number": i
-        # ^_  https://docs.gns3.com/docs/using-gns3/beginners/switching-and-gns3/
-        # [!] for Open vSwitch "adapter_number": i, "port_number": 0
-        # for i in $(seq 16 63); do ovs-vsctl add-port br0 eth$i; done
-        payload = {"nodes": [{"adapter_number": 0, "node_id": dev, "port_number": 0},
-                             {"adapter_number": i, "node_id": switch_node_id, "port_number": 0}]}
-        r = requests.post(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/links", data=json.dumps(payload), auth=(server.user, server.password))
-        r.raise_for_status()
-        devices_link_id.append(r.json()["link_id"])
+        dev_link = create_link(server, project, dev, 0, switch_node_id, i)
+        devices_link_id.append(dev_link["link_id"])
         time.sleep(0.3)
     assert len(devices_link_id) == num_devices
 
     # change device configuration
     netmask = "255.255.0.0"
     for i, dev in enumerate(devices_node_id, start=0):
-        payload = get_static_interface_config_file("eth0", start_ip+i, netmask, "192.168.0.1")
-        r = requests.post(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/nodes/{dev}/files/etc/network/interfaces", data=payload, auth=(server.user, server.password))
-        r.raise_for_status()
-        print("Configured ", dev, " ", r.status_code)
+        set_node_network_interfaces(server, project, dev, "eth0", ipaddress.IPv4Interface(f"{start_ip+i}/16"), "192.168.0.1")
+        print("Configured ", dev)
         time.sleep(0.3)
 
     # decoration
     payload = {"x": start_x + (int(devices_per_row/2)+2)*project.grid_unit, "y": start_y - project.grid_unit,
                "svg": f"<svg><text>{start_ip}\n{start_ip+num_devices-1}\n{netmask}</text></svg>"}
-    r = requests.post(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/drawings", data=json.dumps(payload), auth=(server.user, server.password))
-    r.raise_for_status()
+    req = requests.post(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/drawings", data=json.dumps(payload), auth=(server.user, server.password))
+    req.raise_for_status()
 
     return {"switch_node_id": switch_node_id, "devices_node_id": devices_node_id, "devices_link_id": devices_link_id}, (Xi, Yi, Xf, Yf)
 
@@ -314,9 +301,9 @@ def create_cluster_of_devices(server, project, num_devices, start_x, start_y, sw
 def start_capture(server, project, link_ids):
     """Start packet capture (wireshark) in the selected link_ids."""
     for link in link_ids:
-        r = requests.post(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/links/{link}/start_capture", data={}, auth=(server.user, server.password))
-        r.raise_for_status()
-        result = r.json()
+        req = requests.post(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/links/{link}/start_capture", data={}, auth=(server.user, server.password))
+        req.raise_for_status()
+        result = req.json()
         print(f"Capturing {result['capturing']}, {result['capture_file_name']}")
         time.sleep(0.3)
 
@@ -324,9 +311,9 @@ def start_capture(server, project, link_ids):
 def stop_capture(server, project, link_ids):
     """Stop packet capture in the selected link_ids."""
     for link in link_ids:
-        r = requests.post(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/links/{link}/stop_capture", data={}, auth=(server.user, server.password))
-        r.raise_for_status()
-        result = r.json()
+        req = requests.post(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/links/{link}/stop_capture", data={}, auth=(server.user, server.password))
+        req.raise_for_status()
+        result = req.json()
         print(f"Capturing {result['capturing']}, {result['capture_file_name']}")
         time.sleep(0.3)
 
@@ -339,6 +326,18 @@ def start_all_nodes_by_name_regexp(server: Server, project: Project, node_patter
         for node in nodes:
             print(f"Starting {node.name}... ", end="", flush=True)
             start_node(server, project, node.id)
+            print("OK")
+            time.sleep(sleeptime)
+
+
+def stop_all_nodes_by_name_regexp(server: Server, project: Project, node_pattern: Pattern, sleeptime: float = 0.1) -> None:
+    """Stop all nodes that match a name regexp."""
+    nodes = get_nodes_id_by_name_regexp(server, project, node_pattern)
+    if nodes:
+        print(f"found {len(nodes)} nodes")
+        for node in nodes:
+            print(f"Stopping {node.name}... ", end="", flush=True)
+            stop_node(server, project, node.id)
             print("OK")
             time.sleep(sleeptime)
 
@@ -360,26 +359,12 @@ def start_all_iot(server: Server, project: Project, iot_pattern : Pattern=re.com
 
 def stop_all_switches(server: Server, project: Project, switches_pattern : Pattern=re.compile("openvswitch.*", re.IGNORECASE)) -> None:
     """Stop all network switch nodes (OpenvSwitch switches)."""
-    switches = get_nodes_id_by_name_regexp(server, project, switches_pattern)
-    if switches:
-        print(f"found {len(switches)} switches")
-        for sw in switches:
-            print(f"Stopping {sw.name}... ", end="", flush=True)
-            stop_node(server, project, sw.id)
-            print("OK")
-            time.sleep(0.3)
+    stop_all_nodes_by_name_regexp(server, project, switches_pattern)
 
 
 def stop_all_routers(server: Server, project: Project, routers_pattern : Pattern=re.compile("vyos.*", re.IGNORECASE)) -> None:
     """Stop all router nodes (VyOS routers)."""
-    routers = get_nodes_id_by_name_regexp(server, project, routers_pattern)
-    if routers:
-        print(f"found {len(routers)} routers")
-        for r in routers:
-            print(f"Stopping {r.name}... ", end="", flush=True)
-            stop_node(server, project, r.id)
-            print("OK")
-            time.sleep(0.3)
+    stop_all_nodes_by_name_regexp(server, project, routers_pattern)
 
 
 def start_capture_all_iot_links(server, project, switches_pattern: Pattern=re.compile("openvswitch.*", re.IGNORECASE), iot_pattern: Pattern=re.compile("mqtt-device.*|coap-device.*", re.IGNORECASE)) -> None:

@@ -1,4 +1,4 @@
-"""Create iot simulation topology."""
+"""Create iot simulation topology (simple)."""
 
 import ipaddress
 import sys
@@ -6,7 +6,7 @@ import time
 
 from gns3utils import *
 
-PROJECT_NAME = "iot_sim"
+PROJECT_NAME = "iot_simple"
 AUTO_CONFIGURE_ROUTERS = True
 
 check_resources()
@@ -34,11 +34,11 @@ if len(get_all_nodes(server, project)) > 0:
 templates = get_all_templates(server)
 
 # get template ids
-router_template_id = template_id_from_name(templates, "VyOS 1.3.0")
+router_template_id = get_template_id_from_name(templates, "VyOS 1.3.0")
 assert router_template_id
-switch_template_id = template_id_from_name(templates, "Open vSwitch")
+switch_template_id = get_template_id_from_name(templates, "Open vSwitch")
 assert switch_template_id
-debug_template_id = template_id_from_name(templates, "iotsim-debug-client")
+debug_template_id = get_template_id_from_name(templates, "iotsim-debug-client")
 assert debug_template_id
 
 ############

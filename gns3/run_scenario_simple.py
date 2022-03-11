@@ -1,10 +1,10 @@
-"""Run scenario using the iot simulation topology."""
+"""Run scenario using the iot simulation topology (simple)."""
 
 import sys
 
 from gns3utils import *
 
-PROJECT_NAME = "iot_sim"
+PROJECT_NAME = "iot_simple"
 
 check_resources()
 check_local_gns3_config()
