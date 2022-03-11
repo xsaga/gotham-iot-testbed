@@ -32,6 +32,17 @@ def md5sum_file(fname: str) -> str:
     return hashlib.md5(data).hexdigest()
 
 
+def make_grid(num: int, cols: int):
+    """Make grid."""
+    xi, yi = 0, 0
+    for i in range(1, num + 1):
+        yield (xi, yi)
+        xi += 1
+        if i % cols == 0:
+            yi += 1
+            xi = 0
+
+
 def check_resources() -> None:
     """Check some system resources."""
     nofile_soft, nofile_hard = resource.getrlimit(resource.RLIMIT_NOFILE)
@@ -142,6 +153,13 @@ def get_static_interface_config_file(iface: str, address: str, netmask: str, gat
         f"\tgateway {gateway}\n"
         f"\tup echo nameserver {nameserver} > /etc/resolv.conf\n"
     )
+
+
+def get_template_from_id(server: Server, template_id: str) -> Dict[str, Any]:
+    """Get templete description from template ID."""
+    req = requests.get(f"http://{server.addr}:{server.port}/v2/templates/{template_id}", auth=(server.user, server.password))
+    req.raise_for_status()
+    return req.json()
 
 
 def get_template_id_from_name(templates: List[Dict[str, Any]], name: str) -> Optional[str]:
@@ -255,47 +273,79 @@ def set_node_network_interfaces(server: Server, project: Project, node_id: str, 
     req.raise_for_status()
 
 
-def create_cluster_of_devices(server, project, num_devices, start_x, start_y, switch_template_id, device_template_id, start_ip, devices_per_row=10):
-    assert num_devices < 64  # TODO dinamicamente ver el numero de interfaces en el template y calcular (-1 port para el switch/router de arriba)
+def create_cluster_of_nodes(server: Server, project: Project, num_devices: int, start_x: int, start_y: int, nodes_per_row: int,
+                            switch_template_id: str, node_template_id: str, upstream_switch_id: Optional[str], upstream_switch_port: Optional[int],
+                            node_start_ip_iface: ipaddress.IPv4Interface, gateway: str, nameserver: str, spacing: Optional[str] = 2):
+    """Create cluster of nodes.
+
+          R  <--- gateway (must exist in the topology).
+          |
+          S  <--- upstream switch (must exist in the topology).
+         /
+        S  <----- cluster switch, based on switch_template_id. At coordinates (start_x, start_y).
+        |
+    n n n n n    |  num_devices number of            first ip address = node_start_ip_iface.ip
+    n n n n n  <-|  nodes, based on                  last ip address = node_start_ip_iface.ip + num_devices - 1
+    n n n n n    |  node_template_id.
+    """
+    assert num_devices > 0
+    assert nodes_per_row > 0
+    assert get_template_from_id(server, switch_template_id)["adapters"] >= (num_devices - (1 if upstream_switch_id else 0))
+    if not spacing:
+        spacing = 2
+
     # create cluster switch
-    Xi, Yi = start_x, start_y # - project.grid_unit
-    switch_node = create_node(server, project, start_x + int(devices_per_row/2)*project.grid_unit, start_y - project.grid_unit, switch_template_id)
-    switch_node_id = switch_node["node_id"]
-    time.sleep(0.3)
-
+    cluster_switch = create_node(server, project, start_x, start_y, switch_template_id)
+    print(f"Creating node {cluster_switch['name']}")
     # create device grid
-    devices_node_id = []
-    dy = 0
-    for i in range(num_devices):
-        device_node = create_node(server, project, start_x + (i%devices_per_row)*project.grid_unit, start_y + dy, device_template_id)
-        devices_node_id.append(device_node["node_id"])
-        if i%devices_per_row == devices_per_row-1:
-            dy += project.grid_unit
-        time.sleep(0.3)
-    assert len(devices_node_id) == num_devices
-    Xf, Yf = start_x + (devices_per_row-1)*project.grid_unit, start_y+dy
-    # link devices to the switch
-    devices_link_id = []
-    for i, dev in enumerate(devices_node_id, start=1):
-        dev_link = create_link(server, project, dev, 0, switch_node_id, i)
-        devices_link_id.append(dev_link["link_id"])
-        time.sleep(0.3)
-    assert len(devices_link_id) == num_devices
+    coord_first = Position(start_x - project.grid_unit * spacing * (nodes_per_row - 1) // 2, start_y + project.grid_unit * spacing)
+    devices = []
 
-    # change device configuration
-    netmask = "255.255.0.0"
-    for i, dev in enumerate(devices_node_id, start=0):
-        set_node_network_interfaces(server, project, dev, "eth0", ipaddress.IPv4Interface(f"{start_ip+i}/16"), "192.168.0.1")
-        print("Configured ", dev)
-        time.sleep(0.3)
+    for dx, dy in make_grid(num_devices, nodes_per_row):
+        device = create_node(server, project, coord_first.x + project.grid_unit * spacing * dx, coord_first.y + project.grid_unit * spacing * dy, node_template_id)
+        devices.append(device)
+        print(f"Creating node {device['name']}")
+        time.sleep(0.1)
+
+    coord_last = Position(devices[-1]["x"], devices[-1]["y"])
+
+    # links
+    if upstream_switch_id:
+        create_link(server, project, cluster_switch["node_id"], 0, upstream_switch_id, upstream_switch_port)
+        print(f"Creating link {cluster_switch['name']} <--> {upstream_switch_id}")
+    for i, device in enumerate(devices, start=1):
+        create_link(server, project, device["node_id"], 0, cluster_switch["node_id"], i)
+        print(f"Creating link {device['name']} <--> {cluster_switch['name']}")
+        time.sleep(0.1)
+
+    # configure devices
+    for i, device in enumerate(devices, start=0):
+        device_ip_iface = ipaddress.IPv4Interface(f"{node_start_ip_iface.ip + i}/{node_start_ip_iface.netmask}")
+        set_node_network_interfaces(server, project, device["node_id"], "eth0", device_ip_iface, gateway, nameserver)
+        print(f"Configuring {device['name']} addr: {device_ip_iface.ip}/{device_ip_iface.netmask} gw: {gateway} ns: {nameserver}")
 
     # decoration
-    payload = {"x": start_x + (int(devices_per_row/2)+2)*project.grid_unit, "y": start_y - project.grid_unit,
-               "svg": f"<svg><text>{start_ip}\n{start_ip+num_devices-1}\n{netmask}</text></svg>"}
+    payload = {"x": start_x + project.grid_unit * spacing, "y": start_y - 15,
+               "svg": f"<svg><text font-family=\"monospace\" font-size=\"12\">Start addr: {node_start_ip_iface.ip}/{node_start_ip_iface.netmask}</text></svg>"}
     req = requests.post(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/drawings", data=json.dumps(payload), auth=(server.user, server.password))
     req.raise_for_status()
 
-    return {"switch_node_id": switch_node_id, "devices_node_id": devices_node_id, "devices_link_id": devices_link_id}, (Xi, Yi, Xf, Yf)
+    payload = {"x": start_x + project.grid_unit * spacing, "y": start_y,
+               "svg": f"<svg><text font-family=\"monospace\" font-size=\"12\">End addr  : {device_ip_iface.ip}/{device_ip_iface.netmask}</text></svg>"}
+    req = requests.post(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/drawings", data=json.dumps(payload), auth=(server.user, server.password))
+    req.raise_for_status()
+
+    payload = {"x": start_x + project.grid_unit * spacing, "y": start_y + 15,
+               "svg": f"<svg><text font-family=\"monospace\" font-size=\"12\">Gateway   : {gateway}</text></svg>"}
+    req = requests.post(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/drawings", data=json.dumps(payload), auth=(server.user, server.password))
+    req.raise_for_status()
+
+    payload = {"x": start_x + project.grid_unit * spacing, "y": start_y + 30,
+               "svg": f"<svg><text font-family=\"monospace\" font-size=\"12\">Nameserver: {nameserver}</text></svg>"}
+    req = requests.post(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/drawings", data=json.dumps(payload), auth=(server.user, server.password))
+    req.raise_for_status()
+
+    return (cluster_switch, devices, coord_first, coord_last)
 
 
 def start_capture(server, project, link_ids):
