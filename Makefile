@@ -160,11 +160,11 @@ buildstatus/combined_cycle_cloud: Dockerfiles/iot/combined_cycle_cloud/Dockerfil
 	$(BUILD_CMD) --file $< --tag iotsim/combined-cycle-cloud Dockerfiles/iot/combined_cycle_cloud
 	@touch $@
 
-buildstatus/ip_camera_street: Dockerfiles/iot/ip_camera/Dockerfile.720_15fps_noaudio Dockerfiles/iot/ip_camera/street_london_rainy_night.mp4
+buildstatus/ip_camera_street: Dockerfiles/iot/ip_camera/Dockerfile.720_15fps_noaudio Dockerfiles/iot/ip_camera/street_london_rainy_night.mp4 Dockerfiles/iot/ip_camera/ip_camera.py
 	$(BUILD_CMD) --file $< --tag iotsim/ip-camera-street Dockerfiles/iot/ip_camera
 	@touch $@
 
-buildstatus/ip_camera_museum: Dockerfiles/iot/ip_camera/Dockerfile.720_grayscale_25fps_noaudio Dockerfiles/iot/ip_camera/museum_lebanon.mp4
+buildstatus/ip_camera_museum: Dockerfiles/iot/ip_camera/Dockerfile.720_grayscale_25fps_noaudio Dockerfiles/iot/ip_camera/museum_lebanon.mp4 Dockerfiles/iot/ip_camera/ip_camera.py
 	$(BUILD_CMD) --file $< --tag iotsim/ip-camera-museum Dockerfiles/iot/ip_camera
 	@touch $@
 
@@ -172,7 +172,7 @@ buildstatus/stream_server: Dockerfiles/iot/stream_server/Dockerfile Dockerfiles/
 	$(BUILD_CMD) --file $< --tag iotsim/stream-server Dockerfiles/iot/stream_server
 	@touch $@
 
-buildstatus/stream_consumer: Dockerfiles/iot/stream_consumer/Dockerfile
+buildstatus/stream_consumer: Dockerfiles/iot/stream_consumer/Dockerfile Dockerfiles/iot/stream_consumer/consume.py
 	$(BUILD_CMD) --file $< --tag iotsim/stream-consumer Dockerfiles/iot/stream_consumer
 	@touch $@
 
