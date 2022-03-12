@@ -3,7 +3,9 @@
 import ast
 import re
 
-def get_variable_from_file(fname: str, varname: str):
+from pathlib import Path
+
+def get_variable_from_file(fname: Path, varname: str):
     """Parse a python script to get the value of a variable."""
     with open(fname, "r", encoding="utf-8") as f:
         contents = f.read()
@@ -20,7 +22,7 @@ def get_variable_from_file(fname: str, varname: str):
     raise ValueError(f"Variable {varname} not found.")
 
 
-def parse_project_makefile(makefile: str):
+def parse_project_makefile(makefile: Path):
     """Crappy makefile parser.
     Returns a list of dictionaries, each dictionary contains
     targets, prerequisites and recipes
