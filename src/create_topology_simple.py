@@ -41,6 +41,9 @@ assert switch_template_id
 debug_template_id = get_template_id_from_name(templates, "iotsim-debug-client")
 assert debug_template_id
 
+
+input("Open the GNS3 project GUI. Press enter to continue...")
+
 ############
 # TOPOLOGY #
 ############
