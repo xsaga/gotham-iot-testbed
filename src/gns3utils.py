@@ -141,7 +141,7 @@ def create_docker_template(server: Server, name: str, image: str, environment: s
     return req.json()
 
 
-def get_docker_node_environment(server: Server, project: Project, node_id: str, env: str):
+def get_docker_node_environment(server: Server, project: Project, node_id: str):
     """Get GNS3 docker node environment variables."""
     req = requests.get(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/nodes/{node_id}", auth=(server.user, server.password))
     req.raise_for_status()
