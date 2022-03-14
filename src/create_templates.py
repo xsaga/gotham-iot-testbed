@@ -1,4 +1,6 @@
+import json
 import re
+import requests
 import string
 import time
 import warnings
@@ -110,4 +112,20 @@ diff_py_files = set(all_project_py_files).symmetric_difference(all_scanned_py_fi
 if diff_py_files:
     warnings.warn(f"The python files in the Dockerfiles directory do not match all the python files declared in the Makefile. Is this OK?: {diff_py_files}", RuntimeWarning)
 
-# TODO check that switch and vyos templates exists. else warn for manual installation
+# TODO check that vyos templates exists. else warn for manual installation
+openvswitch_appliance_path = Path("../switch/openvswitch.gns3a")
+with open(openvswitch_appliance_path, "r", encoding="utf-8") as f:
+    openvswitch_appliance = json.load(f)
+
+openvswitch_template_payload = {'adapters': openvswitch_appliance["docker"]['adapters'],
+                                'category': 'switch',
+                                'compute_id': 'local',
+                                'image': openvswitch_appliance["docker"]["image"],
+                                'name': openvswitch_appliance["name"],
+                                'symbol': ':/symbols/multilayer_switch.svg',
+                                'template_type': 'docker',
+                                'usage': openvswitch_appliance["usage"]}
+req = requests.post(f"http://{server.addr}:{server.port}/v2/templates", data=json.dumps(openvswitch_template_payload), auth=(server.user, server.password))
+req.raise_for_status()
+openvswitch_template = req.json()
+print(f"{BLUE}openvswitch_template{RESET}")
