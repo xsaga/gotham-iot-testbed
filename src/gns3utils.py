@@ -141,6 +141,21 @@ def create_docker_template(server: Server, name: str, image: str, environment: s
     return req.json()
 
 
+def get_docker_node_environment(server: Server, project: Project, node_id: str, env: str):
+    """Get GNS3 docker node environment variables."""
+    req = requests.get(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/nodes/{node_id}", auth=(server.user, server.password))
+    req.raise_for_status()
+    return req.json()["properties"]["environment"]
+
+
+def update_docker_node_environment(server: Server, project: Project, node_id: str, env: str):
+    """Update GNS3 docker node environment variables."""
+    payload = {"environment": env}
+    req = requests.put(f"http://{server.addr}:{server.port}/v2/compute/projects/{project.id}/docker/nodes/{node_id}", data=json.dumps(payload), auth=(server.user, server.password))
+    req.raise_for_status()
+    return req.json()
+
+
 def create_project(server: Server, name: str, height: int, width: int):
     """Create GNS3 project."""
     # http://api.gns3.net/en/2.2/api/v2/controller/project/projects.html
