@@ -18,9 +18,9 @@ RESET = "\033[0m"
 
 
 def clean_name(name: str) -> str:
-    """Replace non ascii or digits with '_'."""
+    """Replace non ascii or digits with '-'."""
     allow = string.ascii_letters + string.digits
-    return "".join([c if c in allow else "_" for c in name])
+    return "".join([c if c in allow else "-" for c in name])
 
 
 def get_make_rule_by_target_name(rules: list, target: str):
