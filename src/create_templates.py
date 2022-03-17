@@ -19,7 +19,7 @@ RESET = "\033[0m"
 
 def clean_name(name: str) -> str:
     """Replace non ascii or digits with '-'."""
-    allow = string.ascii_letters + string.digits
+    allow = string.ascii_letters + string.digits + "."
     return "".join([c if c in allow else "-" for c in name])
 
 
@@ -128,4 +128,4 @@ openvswitch_template_payload = {'adapters': openvswitch_appliance["docker"]['ada
 req = requests.post(f"http://{server.addr}:{server.port}/v2/templates", data=json.dumps(openvswitch_template_payload), auth=(server.user, server.password))
 req.raise_for_status()
 openvswitch_template = req.json()
-print(f"{BLUE}openvswitch_template{RESET}")
+print(f"{BLUE}{openvswitch_template}{RESET}")

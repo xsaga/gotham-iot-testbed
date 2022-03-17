@@ -1,5 +1,6 @@
 """Create iot simulation topology (simple)."""
 
+import configparser
 import ipaddress
 import sys
 import time
@@ -111,6 +112,14 @@ mqtt_client_t2_compromised_template_id = get_template_id_from_name(templates, "i
 assert mqtt_client_t2_compromised_template_id
 coap_server_compromised_template_id = get_template_id_from_name(templates, "iotsim-coap-server-compromised")
 assert coap_server_compromised_template_id
+
+
+# read project configuration file
+config = configparser.ConfigParser()
+with open("../iot-sim.config", "r", encoding="utf-8") as cf:
+    # include fake section header 'main'
+    config.read_string(f"[main]\n{cf.read()}")
+    config = config["main"]
 
 
 input("Open the GNS3 project GUI. Press enter to continue...")
@@ -244,38 +253,49 @@ if AUTO_CONFIGURE_ROUTERS:
         time.sleep(10)
 
 
+lab_nameserver = config["LAB_DNS_IPADDR"]
+
 # Mirai
-# TODO. Use correct ip addresses from config file and nameserver.
 
 mirai_cnc = create_node(server, project, coords_east_zone[0].x - project.grid_unit, coords_east_zone[0].y + project.grid_unit * 2, Mirai_cnc_template_id)
 create_link(server, project, switches_east_zone[0]["node_id"], 1, mirai_cnc["node_id"], 0)
-set_node_network_interfaces(server, project, mirai_cnc["node_id"], "eth0", ipaddress.IPv4Interface("192.168.33.10/24"), "192.168.33.1")
+set_node_network_interfaces(server, project, mirai_cnc["node_id"], "eth0", ipaddress.IPv4Interface(f"{config['MIRAI_CNC_IPADDR']}/24"), "192.168.33.1", lab_nameserver)
 
 mirai_scan_listener = create_node(server, project, coords_east_zone[0].x + project.grid_unit, coords_east_zone[0].y + project.grid_unit * 2, Mirai_scan_listener_template_id)
 create_link(server, project, switches_east_zone[0]["node_id"], 2, mirai_scan_listener["node_id"], 0)
-set_node_network_interfaces(server, project, mirai_scan_listener["node_id"], "eth0", ipaddress.IPv4Interface("192.168.33.11/24"), "192.168.33.1")
+set_node_network_interfaces(server, project, mirai_scan_listener["node_id"], "eth0", ipaddress.IPv4Interface(f"{config['MIRAI_REPORT_IPADDR']}/24"), "192.168.33.1", lab_nameserver)
 
 mirai_loader = create_node(server, project, coords_east_zone[0].x - project.grid_unit, coords_east_zone[0].y + project.grid_unit * 3, Mirai_loader_template_id)
 create_link(server, project, switches_east_zone[0]["node_id"], 3, mirai_loader["node_id"], 0)
-set_node_network_interfaces(server, project, mirai_loader["node_id"], "eth0", ipaddress.IPv4Interface("192.168.33.12/24"), "192.168.33.1")
+set_node_network_interfaces(server, project, mirai_loader["node_id"], "eth0", ipaddress.IPv4Interface("192.168.33.12/24"), "192.168.33.1", lab_nameserver)
 
 mirai_wget_loader = create_node(server, project, coords_east_zone[0].x + project.grid_unit, coords_east_zone[0].y + project.grid_unit * 3, Mirai_wget_loader_template_id)
 create_link(server, project, switches_east_zone[0]["node_id"], 4, mirai_wget_loader["node_id"], 0)
-set_node_network_interfaces(server, project, mirai_wget_loader["node_id"], "eth0", ipaddress.IPv4Interface("192.168.33.13/24"), "192.168.33.1")
+set_node_network_interfaces(server, project, mirai_wget_loader["node_id"], "eth0", ipaddress.IPv4Interface(f"{config['MIRAI_WGET_LOADER_IPADDR']}/24"), "192.168.33.1", lab_nameserver)
 
-mirai_bot = create_node(server, project, coord_snorth.x + project.grid_unit * 8, coord_snorth.y - project.grid_unit *2, Mirai_bot_template_id)
+mirai_bot = create_node(server, project, coord_snorth.x + project.grid_unit * 8, coord_snorth.y - project.grid_unit * 2, Mirai_bot_template_id)
 create_link(server, project, snorth["node_id"], 1, mirai_bot["node_id"], 0)
-set_node_network_interfaces(server, project, mirai_bot["node_id"], "eth0", ipaddress.IPv4Interface("192.168.0.100/20"), "192.168.0.1")
+set_node_network_interfaces(server, project, mirai_bot["node_id"], "eth0", ipaddress.IPv4Interface("192.168.0.100/20"), "192.168.0.1", lab_nameserver)
 
 # Merlin
-# TODO. Use correct ip addresses from config file and nameserver.
 
 merlin_cnc = create_node(server, project, coords_east_zone[1].x, coords_east_zone[1].y + project.grid_unit * 2, Merlin_template_id)
 create_link(server, project, switches_east_zone[1]["node_id"], 1, merlin_cnc["node_id"], 0)
-set_node_network_interfaces(server, project, merlin_cnc["node_id"], "eth0", ipaddress.IPv4Interface("192.168.34.10/24"), "192.168.34.1")
+set_node_network_interfaces(server, project, merlin_cnc["node_id"], "eth0", ipaddress.IPv4Interface("192.168.34.10/24"), "192.168.34.1", lab_nameserver)
 
 
 # Scan
+
+# DNS
+dns = create_node(server, project, coord_snorth.x + project.grid_unit * 6, coord_snorth.y - project.grid_unit * 2, DNS_template_id)
+create_link(server, project, snorth["node_id"], 2, dns["node_id"], 0)
+set_node_network_interfaces(server, project, dns["node_id"], "eth0", ipaddress.IPv4Interface("192.168.0.2/20"), "192.168.0.1", "127.0.0.1")
+
+# NTP
+
+ntp = create_node(server, project, coord_snorth.x + project.grid_unit * 4, coord_snorth.y - project.grid_unit * 2, NTP_template_id)
+create_link(server, project, snorth["node_id"], 3, ntp["node_id"], 0)
+set_node_network_interfaces(server, project, ntp["node_id"], "eth0", ipaddress.IPv4Interface("192.168.0.3/20"), "192.168.0.1", lab_nameserver)
 
 
 ########## debug clients ##########
