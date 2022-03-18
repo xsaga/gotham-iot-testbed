@@ -516,6 +516,30 @@ def stop_capture_all_iot_links(server, project, switches_pattern: Pattern=re.com
         time.sleep(0.3)
 
 
+def check_ipaddrs(server: Server, project: Project):
+    """Check for duplicated addresses in the project."""
+    nodes = get_all_nodes(server, project)
+    found_addrs = {}
+    for node in nodes:
+        req = requests.get(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/nodes/{node['node_id']}/files/etc/network/interfaces", auth=(server.user, server.password))
+        if not req.ok:
+            print(f"Ignoring  {node['name']}:\t{req.status_code} {req.reason} /etc/network/interfaces")
+            continue
+        # ignore comments
+        ifaces = "\n".join(filter(lambda l: not l.strip().startswith("#"), req.text.split("\n")))
+        match = re.search(r"address\s+(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})", ifaces)
+        if match:
+            addr = match.group(1)
+            found_addrs[addr] = found_addrs.get(addr, 0) + 1
+            print(f"Searching {node['name']}:\t{addr}")
+        else:
+            print(f"Searching {node['name']}:\tNo matches")
+
+    duplicates = {k: v for k, v in found_addrs.items() if v > 1}
+    if duplicates:
+        raise ValueError(f"Duplicated ip addresses found: {duplicates}")
+
+
 def install_vyos_image_on_node(node_id: str, hostname: str, telnet_port: int, pre_exec : Optional[str] = None) -> None:
     """Perform VyOS installation steps.
 
