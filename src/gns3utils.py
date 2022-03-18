@@ -141,6 +141,19 @@ def create_docker_template(server: Server, name: str, image: str, environment: s
     return req.json()
 
 
+def environment_dict_to_string(env: dict):
+    """Environment variable dictionary to string."""
+    res = []
+    for k, v in env.items():
+        res.append(f"{k}={v}")
+    return "\n".join(res)
+
+
+def environment_string_to_dict(env: str):
+    """Environment variable string to dictionary."""
+    return { pair.split("=", 1)[0]: pair.split("=", 1)[1] for pair in env.split("\n") }
+
+
 def get_docker_node_environment(server: Server, project: Project, node_id: str):
     """Get GNS3 docker node environment variables."""
     req = requests.get(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/nodes/{node_id}", auth=(server.user, server.password))

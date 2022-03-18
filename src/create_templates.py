@@ -8,7 +8,7 @@ import warnings
 from pathlib import Path
 
 from parseutils import get_variable_from_file, parse_project_makefile
-from gns3utils import Server, check_server_version, create_docker_template, get_all_templates, read_local_gns3_config
+from gns3utils import Server, check_server_version, create_docker_template, environment_dict_to_string, get_all_templates, read_local_gns3_config
 
 
 YELLOW = "\033[93m"
@@ -25,13 +25,6 @@ def clean_name(name: str) -> str:
 
 def get_make_rule_by_target_name(rules: list, target: str):
     return next(filter(lambda t: target in t["targets"], rules))
-
-
-def dict_to_env_str(env: dict):
-    res = []
-    for k, v in env.items():
-        res.append(f"{k}={v}")
-    return "\n".join(res)
 
 
 server = Server(*read_local_gns3_config())
@@ -75,7 +68,7 @@ for target in all_docker_targets:
                 config = get_variable_from_file(pydep_file, "config")
                 print("... found.")
                 print(f"\t\t\t{GREEN}{config}{RESET}")
-                env_vars = dict_to_env_str(config)
+                env_vars = environment_dict_to_string(config)
                 break
             except ValueError:
                 print("... not found.")
