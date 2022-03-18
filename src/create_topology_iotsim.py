@@ -21,7 +21,7 @@ project = get_project_by_name(server, PROJECT_NAME)
 if project:
     print(f"Project {PROJECT_NAME} exists. ", project)
 else:
-    project = create_project(server, PROJECT_NAME, 2000, 4000)
+    project = create_project(server, PROJECT_NAME, 5000, 7500, 15)
     print("Created project ", project)
 
 open_project_if_closed(server, project)
@@ -141,7 +141,7 @@ input("Open the GNS3 project GUI. Press enter to continue...")
 #            |
 #  -+        v Y +     ++
 
-coord_rnorth = Position(0, 0)
+coord_rnorth = Position(1000, -2000)
 coord_rwest = Position(coord_rnorth.x - project.grid_unit * 2, coord_rnorth.y + project.grid_unit * 4)
 coord_reast = Position(coord_rnorth.x + project.grid_unit * 2, coord_rnorth.y + project.grid_unit * 4)
 
@@ -175,8 +175,8 @@ if AUTO_CONFIGURE_ROUTERS:
 
 # backbone switches
 coord_snorth = Position(coord_rnorth.x, coord_rnorth.y - project.grid_unit * 2)
-coord_swest = Position(coord_rwest.x - project.grid_unit * 8, coord_rwest.y)
-coord_seast = Position(coord_reast.x + project.grid_unit * 8, coord_reast.y)
+coord_swest = Position(coord_rwest.x - project.grid_unit * 10, coord_rwest.y)
+coord_seast = Position(coord_reast.x + project.grid_unit * 25, coord_reast.y)
 
 snorth = create_node(server, project, coord_snorth.x, coord_snorth.y, switch_template_id)
 swest = create_node(server, project, coord_swest.x, coord_swest.y, switch_template_id)
@@ -191,7 +191,7 @@ routers_west_zone = []
 switches_west_zone = []
 coords_west_zone = []
 switch_freeport = 1
-for i in [-6, -2, 2, 6]:
+for i in [-40, -20, 0, 20]:
     coord = Position(coord_swest.x + project.grid_unit * i, coord_swest.y + project.grid_unit * 3)
     rzone = create_node(server, project, coord.x, coord.y, router_template_id)
     create_link(server, project, rzone["node_id"], 1, swest["node_id"], switch_freeport)
@@ -224,7 +224,7 @@ routers_east_zone = []
 switches_east_zone = []
 coords_east_zone = []
 switch_freeport = 1
-for i in [-4, 0, 4]:
+for i in [-5, 0, 5]:
     coord = Position(coord_seast.x + project.grid_unit * i, coord_seast.y + project.grid_unit * 3)
     rzone = create_node(server, project, coord.x, coord.y, router_template_id)
     create_link(server, project, rzone["node_id"], 1, seast["node_id"], switch_freeport)
@@ -285,6 +285,7 @@ set_node_network_interfaces(server, project, merlin_cnc["node_id"], "eth0", ipad
 
 
 # Scan
+# TODO.
 
 # DNS
 dns = create_node(server, project, coord_snorth.x + project.grid_unit * 6, coord_snorth.y - project.grid_unit * 2, DNS_template_id)

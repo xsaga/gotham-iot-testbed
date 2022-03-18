@@ -169,11 +169,11 @@ def update_docker_node_environment(server: Server, project: Project, node_id: st
     return req.json()
 
 
-def create_project(server: Server, name: str, height: int, width: int):
+def create_project(server: Server, name: str, height: int, width: int, zoom: Optional[int] = 40):
     """Create GNS3 project."""
     # http://api.gns3.net/en/2.2/api/v2/controller/project/projects.html
     # Coordinate 0,0 is located in the center of the project
-    payload_project = {"name": name, "show_grid": True, "scene_height": height, "scene_width": width}
+    payload_project = {"name": name, "show_grid": True, "scene_height": int(height), "scene_width": int(width), "zoom": int(zoom)}
     req = requests.post(f"http://{server.addr}:{server.port}/v2/projects", data=json.dumps(payload_project), auth=(server.user, server.password))
     req.raise_for_status()
     req = req.json()
