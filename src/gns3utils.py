@@ -287,7 +287,7 @@ def get_links_id_from_node_connected_to_name_regexp(server: Server, project: Pro
 
 def create_node(server: Server, project: Project, start_x: int, start_y: int, node_template_id: str, node_name: Optional[str] = None):
     """Create selected node at coordinates start_x, start_y."""
-    payload = {"x": start_x, "y": start_y}
+    payload = {"x": int(start_x), "y": int(start_y)}
     if node_name:
         # GNS3 is not updating the name...
         payload["name"] = node_name
@@ -336,7 +336,7 @@ def set_node_network_interfaces(server: Server, project: Project, node_id: str, 
 
 def create_cluster_of_nodes(server: Server, project: Project, num_devices: int, start_x: int, start_y: int, nodes_per_row: int,
                             switch_template_id: str, node_template_id: str, upstream_switch_id: Optional[str], upstream_switch_port: Optional[int],
-                            node_start_ip_iface: ipaddress.IPv4Interface, gateway: str, nameserver: str, spacing: Optional[str] = 2):
+                            node_start_ip_iface: ipaddress.IPv4Interface, gateway: str, nameserver: str, spacing: Optional[float] = 2):
     """Create cluster of nodes.
 
           R  <--- gateway (must exist in the topology).
@@ -386,22 +386,22 @@ def create_cluster_of_nodes(server: Server, project: Project, num_devices: int, 
         print(f"Configuring {device['name']} addr: {device_ip_iface.ip}/{device_ip_iface.netmask} gw: {gateway} ns: {nameserver}")
 
     # decoration
-    payload = {"x": start_x + project.grid_unit * spacing, "y": start_y - 15,
+    payload = {"x": int(start_x + project.grid_unit * spacing), "y": int(start_y - 15),
                "svg": f"<svg><text font-family=\"monospace\" font-size=\"12\">Start addr: {node_start_ip_iface.ip}/{node_start_ip_iface.netmask}</text></svg>"}
     req = requests.post(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/drawings", data=json.dumps(payload), auth=(server.user, server.password))
     req.raise_for_status()
 
-    payload = {"x": start_x + project.grid_unit * spacing, "y": start_y,
+    payload = {"x": int(start_x + project.grid_unit * spacing), "y": int(start_y),
                "svg": f"<svg><text font-family=\"monospace\" font-size=\"12\">End addr  : {device_ip_iface.ip}/{device_ip_iface.netmask}</text></svg>"}
     req = requests.post(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/drawings", data=json.dumps(payload), auth=(server.user, server.password))
     req.raise_for_status()
 
-    payload = {"x": start_x + project.grid_unit * spacing, "y": start_y + 15,
+    payload = {"x": int(start_x + project.grid_unit * spacing), "y": int(start_y + 15),
                "svg": f"<svg><text font-family=\"monospace\" font-size=\"12\">Gateway   : {gateway}</text></svg>"}
     req = requests.post(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/drawings", data=json.dumps(payload), auth=(server.user, server.password))
     req.raise_for_status()
 
-    payload = {"x": start_x + project.grid_unit * spacing, "y": start_y + 30,
+    payload = {"x": int(start_x + project.grid_unit * spacing), "y": int(start_y + 30),
                "svg": f"<svg><text font-family=\"monospace\" font-size=\"12\">Nameserver: {nameserver}</text></svg>"}
     req = requests.post(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/drawings", data=json.dumps(payload), auth=(server.user, server.password))
     req.raise_for_status()
