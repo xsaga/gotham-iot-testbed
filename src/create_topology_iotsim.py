@@ -141,7 +141,7 @@ input("Open the GNS3 project GUI. Press enter to continue...")
 #            |
 #  -+        v Y +     ++
 
-coord_rnorth = Position(1000, -2000)
+coord_rnorth = Position(1000, -1700)
 coord_rwest = Position(coord_rnorth.x - project.grid_unit * 2, coord_rnorth.y + project.grid_unit * 4)
 coord_reast = Position(coord_rnorth.x + project.grid_unit * 2, coord_rnorth.y + project.grid_unit * 4)
 
@@ -273,7 +273,7 @@ mirai_wget_loader = create_node(server, project, coords_east_zone[0].x + project
 create_link(server, project, switches_east_zone[0]["node_id"], 4, mirai_wget_loader["node_id"], 0)
 set_node_network_interfaces(server, project, mirai_wget_loader["node_id"], "eth0", ipaddress.IPv4Interface(f"{sim_config['MIRAI_WGET_LOADER_IPADDR']}/24"), "192.168.33.1", lab_nameserver)
 
-mirai_bot = create_node(server, project, coord_snorth.x + project.grid_unit * 8, coord_snorth.y - project.grid_unit * 2, Mirai_bot_template_id)
+mirai_bot = create_node(server, project, coord_snorth.x + project.grid_unit * 16, coord_snorth.y - project.grid_unit * 2, Mirai_bot_template_id)
 create_link(server, project, snorth["node_id"], 1, mirai_bot["node_id"], 0)
 set_node_network_interfaces(server, project, mirai_bot["node_id"], "eth0", ipaddress.IPv4Interface("192.168.0.100/20"), "192.168.0.1", lab_nameserver)
 
@@ -288,13 +288,13 @@ set_node_network_interfaces(server, project, merlin_cnc["node_id"], "eth0", ipad
 # TODO.
 
 # DNS
-dns = create_node(server, project, coord_snorth.x + project.grid_unit * 6, coord_snorth.y - project.grid_unit * 2, DNS_template_id)
+dns = create_node(server, project, coord_snorth.x + project.grid_unit * 12, coord_snorth.y - project.grid_unit * 2, DNS_template_id)
 create_link(server, project, snorth["node_id"], 2, dns["node_id"], 0)
 set_node_network_interfaces(server, project, dns["node_id"], "eth0", ipaddress.IPv4Interface(f"{lab_nameserver}/20"), "192.168.0.1", "127.0.0.1")
 
 # NTP
 
-ntp = create_node(server, project, coord_snorth.x + project.grid_unit * 4, coord_snorth.y - project.grid_unit * 2, NTP_template_id)
+ntp = create_node(server, project, coord_snorth.x + project.grid_unit * 8, coord_snorth.y - project.grid_unit * 2, NTP_template_id)
 create_link(server, project, snorth["node_id"], 3, ntp["node_id"], 0)
 set_node_network_interfaces(server, project, ntp["node_id"], "eth0", ipaddress.IPv4Interface("192.168.0.3/20"), "192.168.0.1", lab_nameserver)
 
@@ -303,12 +303,16 @@ set_node_network_interfaces(server, project, ntp["node_id"], "eth0", ipaddress.I
 
 LABS_BROKER_PLAIN_NAME = (f"broker.labs.{sim_config['LOCAL_DOMAIN']}", "192.168.4.2")
 
+coord_labs_snorth = Position(coord_snorth.x + project.grid_unit * 4, coord_snorth.y - project.grid_unit * 2)
+labs_snorth = create_node(server, project, coord_labs_snorth.x, coord_labs_snorth.y, switch_template_id)
+create_link(server, project, snorth["node_id"], 4, labs_snorth["node_id"], 0)
+
 labs_clus_comb_plain = create_cluster_of_nodes(server, project, 10, coords_west_zone[3].x - project.grid_unit * 5, coords_west_zone[3].y + project.grid_unit * 2, 5,
                                                switch_template_id, combined_cycle_template_id, switches_west_zone[3]["node_id"], 1,
                                                ipaddress.IPv4Interface("192.168.20.10/24"), "192.168.20.1", lab_nameserver, 1.5)
 
-labs_comb_cloud_plain = create_node(server, project, coord_snorth.x + project.grid_unit * 2, coord_snorth.y - project.grid_unit * 2, combined_cycle_cloud_template_id)
-create_link(server, project, snorth["node_id"], 4, labs_comb_cloud_plain["node_id"], 0)
+labs_comb_cloud_plain = create_node(server, project, coord_labs_snorth.x + project.grid_unit * 1, coord_labs_snorth.y - project.grid_unit * 2, combined_cycle_cloud_template_id)
+create_link(server, project, labs_snorth["node_id"], 1, labs_comb_cloud_plain["node_id"], 0)
 set_node_network_interfaces(server, project, labs_comb_cloud_plain["node_id"], "eth0", ipaddress.IPv4Interface("192.168.4.1/20"), "192.168.0.1", lab_nameserver)
 env = get_docker_node_environment(server, project, labs_comb_cloud_plain["node_id"])
 env = environment_string_to_dict(env)
@@ -316,8 +320,8 @@ env["COAP_ADDR_LIST"] = "192.168.20.10-192.168.20.19"
 update_docker_node_environment(server, project, labs_comb_cloud_plain["node_id"], environment_dict_to_string(env))
 
 
-labs_mqtt_cloud_plain = create_node(server, project, coord_snorth.x + project.grid_unit * 0, coord_snorth.y - project.grid_unit * 2, mqtt_broker_1_6_template_id)
-create_link(server, project, snorth["node_id"], 5, labs_mqtt_cloud_plain["node_id"], 0)
+labs_mqtt_cloud_plain = create_node(server, project, coord_labs_snorth.x - project.grid_unit * 1, coord_labs_snorth.y - project.grid_unit * 2, mqtt_broker_1_6_template_id)
+create_link(server, project, labs_snorth["node_id"], 2, labs_mqtt_cloud_plain["node_id"], 0)
 set_node_network_interfaces(server, project, labs_mqtt_cloud_plain["node_id"], "eth0", ipaddress.IPv4Interface(f"{LABS_BROKER_PLAIN_NAME[1]}/20"), "192.168.0.1", lab_nameserver)
 
 labs_clus_hydr_plain = create_cluster_of_nodes(server, project, 10, coords_west_zone[3].x + project.grid_unit * 5, coords_west_zone[3].y + project.grid_unit * 2, 5,
@@ -333,8 +337,12 @@ for d in labs_clus_hydr_plain[1]:
 
 STEEL_BROKER_PLAIN_NAME = (f"broker.steel.{sim_config['LOCAL_DOMAIN']}", "192.168.3.1")
 
-steel_mqtt_cloud_plain = create_node(server, project, coord_snorth.x + project.grid_unit * -2, coord_snorth.y - project.grid_unit * 2, mqtt_broker_1_6_template_id)
-create_link(server, project, snorth["node_id"], 6, steel_mqtt_cloud_plain["node_id"], 0)
+coord_steel_snorth = Position(coord_snorth.x + project.grid_unit * 0, coord_snorth.y - project.grid_unit * 2)
+steel_snorth = create_node(server, project, coord_steel_snorth.x, coord_steel_snorth.y, switch_template_id)
+create_link(server, project, snorth["node_id"], 5, steel_snorth["node_id"], 0)
+
+steel_mqtt_cloud_plain = create_node(server, project, coord_steel_snorth.x, coord_steel_snorth.y - project.grid_unit * 2, mqtt_broker_1_6_template_id)
+create_link(server, project, steel_snorth["node_id"], 1, steel_mqtt_cloud_plain["node_id"], 0)
 set_node_network_interfaces(server, project, steel_mqtt_cloud_plain["node_id"], "eth0", ipaddress.IPv4Interface(f"{STEEL_BROKER_PLAIN_NAME[1]}/20"), "192.168.0.1", lab_nameserver)
 
 
@@ -360,12 +368,16 @@ for d in steel_clus_pred_plain[1]:
 NEIGH_BROKER_PLAIN_NAME = (f"broker.neigh.{sim_config['LOCAL_DOMAIN']}", "192.168.2.1")
 NEIGH_STREAMSERVER_NAME = (f"ipcam.neigh.{sim_config['LOCAL_DOMAIN']}", "192.168.2.2")
 
-neigh_mqtt_cloud_plain = create_node(server, project, coord_snorth.x + project.grid_unit * -4, coord_snorth.y - project.grid_unit * 2, mqtt_broker_1_6_template_id)
-create_link(server, project, snorth["node_id"], 7, neigh_mqtt_cloud_plain["node_id"], 0)
+coord_neigh_snorth = Position(coord_snorth.x + project.grid_unit * -4, coord_snorth.y - project.grid_unit * 2)
+neigh_snorth = create_node(server, project, coord_neigh_snorth.x, coord_neigh_snorth.y, switch_template_id)
+create_link(server, project, snorth["node_id"], 6, neigh_snorth["node_id"], 0)
+
+neigh_mqtt_cloud_plain = create_node(server, project, coord_neigh_snorth.x + project.grid_unit * 1, coord_neigh_snorth.y - project.grid_unit * 2, mqtt_broker_1_6_template_id)
+create_link(server, project, neigh_snorth["node_id"], 1, neigh_mqtt_cloud_plain["node_id"], 0)
 set_node_network_interfaces(server, project, neigh_mqtt_cloud_plain["node_id"], "eth0", ipaddress.IPv4Interface(f"{NEIGH_BROKER_PLAIN_NAME[1]}/20"), "192.168.0.1", lab_nameserver)
 
-neigh_stream_cloud = create_node(server, project, coord_snorth.x + project.grid_unit * -6, coord_snorth.y - project.grid_unit * 2, stream_server_template_id)
-create_link(server, project, snorth["node_id"], 8, neigh_stream_cloud["node_id"], 0)
+neigh_stream_cloud = create_node(server, project, coord_neigh_snorth.x - project.grid_unit * 1, coord_neigh_snorth.y - project.grid_unit * 2, stream_server_template_id)
+create_link(server, project, neigh_snorth["node_id"], 2, neigh_stream_cloud["node_id"], 0)
 set_node_network_interfaces(server, project, neigh_stream_cloud["node_id"], "eth0", ipaddress.IPv4Interface(f"{NEIGH_STREAMSERVER_NAME[1]}/20"), "192.168.0.1", lab_nameserver)
 
 neigh_clus_domotic_plain = create_cluster_of_nodes(server, project, 5, coords_west_zone[1].x - project.grid_unit * 5, coords_west_zone[1].y + project.grid_unit * 2, 5,
@@ -391,12 +403,16 @@ for d in neigh_clus_ipcam[1]:
 MUSEUM_BROKER_PLAIN_NAME = (f"broker.museum.{sim_config['LOCAL_DOMAIN']}", "192.168.1.1")
 MUSEUM_STREAMSERVER_NAME = (f"ipcam.museum.{sim_config['LOCAL_DOMAIN']}", "192.168.1.2")
 
-museum_mqtt_cloud_plain = create_node(server, project, coord_snorth.x + project.grid_unit * -8, coord_snorth.y - project.grid_unit * 2, mqtt_broker_1_6_template_id)
-create_link(server, project, snorth["node_id"], 9, museum_mqtt_cloud_plain["node_id"], 0)
+coord_museum_snorth = Position(coord_snorth.x + project.grid_unit * -8, coord_snorth.y - project.grid_unit * 2)
+museum_snorth = create_node(server, project, coord_museum_snorth.x, coord_museum_snorth.y, switch_template_id)
+create_link(server, project, snorth["node_id"], 7, museum_snorth["node_id"], 0)
+
+museum_mqtt_cloud_plain = create_node(server, project, coord_museum_snorth.x + project.grid_unit * 1, coord_museum_snorth.y - project.grid_unit * 2, mqtt_broker_1_6_template_id)
+create_link(server, project, museum_snorth["node_id"], 1, museum_mqtt_cloud_plain["node_id"], 0)
 set_node_network_interfaces(server, project, museum_mqtt_cloud_plain["node_id"], "eth0", ipaddress.IPv4Interface(f"{MUSEUM_BROKER_PLAIN_NAME[1]}/20"), "192.168.0.1", lab_nameserver)
 
-museum_stream_cloud = create_node(server, project, coord_snorth.x + project.grid_unit * -10, coord_snorth.y - project.grid_unit * 2, stream_server_template_id)
-create_link(server, project, snorth["node_id"], 10, museum_stream_cloud["node_id"], 0)
+museum_stream_cloud = create_node(server, project, coord_museum_snorth.x - project.grid_unit * 1, coord_museum_snorth.y - project.grid_unit * 2, stream_server_template_id)
+create_link(server, project, museum_snorth["node_id"], 2, museum_stream_cloud["node_id"], 0)
 set_node_network_interfaces(server, project, museum_stream_cloud["node_id"], "eth0", ipaddress.IPv4Interface(f"{MUSEUM_STREAMSERVER_NAME[1]}/20"), "192.168.0.1", lab_nameserver)
 
 museum_clus_building_plain = create_cluster_of_nodes(server, project, 5, coords_west_zone[0].x - project.grid_unit * 5, coords_west_zone[0].y + project.grid_unit * 2, 5,
