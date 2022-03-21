@@ -301,6 +301,8 @@ set_node_network_interfaces(server, project, ntp["node_id"], "eth0", ipaddress.I
 
 # Labs
 
+LABS_BROKER_PLAIN_NAME = (f"broker.labs.{sim_config['LOCAL_DOMAIN']}", "192.168.4.2")
+
 labs_clus_comb_plain = create_cluster_of_nodes(server, project, 10, coords_west_zone[3].x - project.grid_unit * 5, coords_west_zone[3].y + project.grid_unit * 2, 5,
                                                switch_template_id, combined_cycle_template_id, switches_west_zone[3]["node_id"], 1,
                                                ipaddress.IPv4Interface("192.168.20.10/24"), "192.168.20.1", lab_nameserver, 1.5)
@@ -316,22 +318,24 @@ update_docker_node_environment(server, project, labs_comb_cloud_plain["node_id"]
 
 labs_mqtt_cloud_plain = create_node(server, project, coord_snorth.x + project.grid_unit * 0, coord_snorth.y - project.grid_unit * 2, mqtt_broker_1_6_template_id)
 create_link(server, project, snorth["node_id"], 5, labs_mqtt_cloud_plain["node_id"], 0)
-set_node_network_interfaces(server, project, labs_mqtt_cloud_plain["node_id"], "eth0", ipaddress.IPv4Interface("192.168.4.2/20"), "192.168.0.1", lab_nameserver)
+set_node_network_interfaces(server, project, labs_mqtt_cloud_plain["node_id"], "eth0", ipaddress.IPv4Interface(f"{LABS_BROKER_PLAIN_NAME[1]}/20"), "192.168.0.1", lab_nameserver)
 
 labs_clus_hydr_plain = create_cluster_of_nodes(server, project, 10, coords_west_zone[3].x + project.grid_unit * 5, coords_west_zone[3].y + project.grid_unit * 2, 5,
                                                switch_template_id, hydraulic_system_template_id, switches_west_zone[3]["node_id"], 2,
                                                ipaddress.IPv4Interface("192.168.20.20/24"), "192.168.20.1", lab_nameserver, 1.5)
 for d in labs_clus_hydr_plain[1]:
     env = environment_string_to_dict(get_docker_node_environment(server, project, d["node_id"]))
-    env["MQTT_BROKER_ADDR"] = "192.168.4.2"
+    env["MQTT_BROKER_ADDR"] = LABS_BROKER_PLAIN_NAME[0]
     update_docker_node_environment(server, project, d["node_id"], environment_dict_to_string(env))
 
 
 # Steel
 
+STEEL_BROKER_PLAIN_NAME = (f"broker.steel.{sim_config['LOCAL_DOMAIN']}", "192.168.3.1")
+
 steel_mqtt_cloud_plain = create_node(server, project, coord_snorth.x + project.grid_unit * -2, coord_snorth.y - project.grid_unit * 2, mqtt_broker_1_6_template_id)
 create_link(server, project, snorth["node_id"], 6, steel_mqtt_cloud_plain["node_id"], 0)
-set_node_network_interfaces(server, project, steel_mqtt_cloud_plain["node_id"], "eth0", ipaddress.IPv4Interface("192.168.3.1/20"), "192.168.0.1", lab_nameserver)
+set_node_network_interfaces(server, project, steel_mqtt_cloud_plain["node_id"], "eth0", ipaddress.IPv4Interface(f"{STEEL_BROKER_PLAIN_NAME[1]}/20"), "192.168.0.1", lab_nameserver)
 
 
 steel_clus_cooler_plain = create_cluster_of_nodes(server, project, 10, coords_west_zone[2].x - project.grid_unit * 5, coords_west_zone[2].y + project.grid_unit * 2, 5,
@@ -339,7 +343,7 @@ steel_clus_cooler_plain = create_cluster_of_nodes(server, project, 10, coords_we
                                                   ipaddress.IPv4Interface("192.168.19.10/24"), "192.168.19.1", lab_nameserver, 1.5)
 for d in steel_clus_cooler_plain[1]:
     env = environment_string_to_dict(get_docker_node_environment(server, project, d["node_id"]))
-    env["MQTT_BROKER_ADDR"] = "192.168.3.1"
+    env["MQTT_BROKER_ADDR"] = STEEL_BROKER_PLAIN_NAME[0]
     update_docker_node_environment(server, project, d["node_id"], environment_dict_to_string(env))
 
 steel_clus_pred_plain = create_cluster_of_nodes(server, project, 10, coords_west_zone[2].x + project.grid_unit * 5, coords_west_zone[2].y + project.grid_unit * 2, 5,
@@ -347,19 +351,22 @@ steel_clus_pred_plain = create_cluster_of_nodes(server, project, 10, coords_west
                                                 ipaddress.IPv4Interface("192.168.19.20/24"), "192.168.19.1", lab_nameserver, 1.5)
 for d in steel_clus_pred_plain[1]:
     env = environment_string_to_dict(get_docker_node_environment(server, project, d["node_id"]))
-    env["MQTT_BROKER_ADDR"] = "192.168.3.1"
+    env["MQTT_BROKER_ADDR"] = STEEL_BROKER_PLAIN_NAME[0]
     update_docker_node_environment(server, project, d["node_id"], environment_dict_to_string(env))
 
 
 # Neigh
 
+NEIGH_BROKER_PLAIN_NAME = (f"broker.neigh.{sim_config['LOCAL_DOMAIN']}", "192.168.2.1")
+NEIGH_STREAMSERVER_NAME = (f"ipcam.neigh.{sim_config['LOCAL_DOMAIN']}", "192.168.2.2")
+
 neigh_mqtt_cloud_plain = create_node(server, project, coord_snorth.x + project.grid_unit * -4, coord_snorth.y - project.grid_unit * 2, mqtt_broker_1_6_template_id)
 create_link(server, project, snorth["node_id"], 7, neigh_mqtt_cloud_plain["node_id"], 0)
-set_node_network_interfaces(server, project, neigh_mqtt_cloud_plain["node_id"], "eth0", ipaddress.IPv4Interface("192.168.2.1/20"), "192.168.0.1", lab_nameserver)
+set_node_network_interfaces(server, project, neigh_mqtt_cloud_plain["node_id"], "eth0", ipaddress.IPv4Interface(f"{NEIGH_BROKER_PLAIN_NAME[1]}/20"), "192.168.0.1", lab_nameserver)
 
 neigh_stream_cloud = create_node(server, project, coord_snorth.x + project.grid_unit * -6, coord_snorth.y - project.grid_unit * 2, stream_server_template_id)
 create_link(server, project, snorth["node_id"], 8, neigh_stream_cloud["node_id"], 0)
-set_node_network_interfaces(server, project, neigh_stream_cloud["node_id"], "eth0", ipaddress.IPv4Interface("192.168.2.2/20"), "192.168.0.1", lab_nameserver)
+set_node_network_interfaces(server, project, neigh_stream_cloud["node_id"], "eth0", ipaddress.IPv4Interface(f"{NEIGH_STREAMSERVER_NAME[1]}/20"), "192.168.0.1", lab_nameserver)
 
 neigh_clus_domotic_plain = create_cluster_of_nodes(server, project, 5, coords_west_zone[1].x - project.grid_unit * 5, coords_west_zone[1].y + project.grid_unit * 2, 5,
                                                    switch_template_id, domotic_monitor_template_id, switches_west_zone[1]["node_id"], 1,
@@ -367,7 +374,7 @@ neigh_clus_domotic_plain = create_cluster_of_nodes(server, project, 5, coords_we
 for d in neigh_clus_domotic_plain[1]:
     env = environment_string_to_dict(get_docker_node_environment(server, project, d["node_id"]))
     # TODO. change dataset env.
-    env["MQTT_BROKER_ADDR"] = "192.168.2.1"
+    env["MQTT_BROKER_ADDR"] = NEIGH_BROKER_PLAIN_NAME[0]
     update_docker_node_environment(server, project, d["node_id"], environment_dict_to_string(env))
 
 neigh_clus_ipcam = create_cluster_of_nodes(server, project, 2, coords_west_zone[1].x + project.grid_unit * 5, coords_west_zone[1].y + project.grid_unit * 2, 2,
@@ -375,26 +382,29 @@ neigh_clus_ipcam = create_cluster_of_nodes(server, project, 2, coords_west_zone[
                                            ipaddress.IPv4Interface("192.168.18.15/24"), "192.168.18.1", lab_nameserver, 1.5)
 for d in neigh_clus_ipcam[1]:
     env = environment_string_to_dict(get_docker_node_environment(server, project, d["node_id"]))
-    env["STREAM_SERVER_ADDR"] = "192.168.2.2"
+    env["STREAM_SERVER_ADDR"] = NEIGH_STREAMSERVER_NAME[0]
     env["STREAM_NAME"] = d["name"]
     update_docker_node_environment(server, project, d["node_id"], environment_dict_to_string(env))
 
 # Museum
 
+MUSEUM_BROKER_PLAIN_NAME = (f"broker.museum.{sim_config['LOCAL_DOMAIN']}", "192.168.1.1")
+MUSEUM_STREAMSERVER_NAME = (f"ipcam.museum.{sim_config['LOCAL_DOMAIN']}", "192.168.1.2")
+
 museum_mqtt_cloud_plain = create_node(server, project, coord_snorth.x + project.grid_unit * -8, coord_snorth.y - project.grid_unit * 2, mqtt_broker_1_6_template_id)
 create_link(server, project, snorth["node_id"], 9, museum_mqtt_cloud_plain["node_id"], 0)
-set_node_network_interfaces(server, project, museum_mqtt_cloud_plain["node_id"], "eth0", ipaddress.IPv4Interface("192.168.1.1/20"), "192.168.0.1", lab_nameserver)
+set_node_network_interfaces(server, project, museum_mqtt_cloud_plain["node_id"], "eth0", ipaddress.IPv4Interface(f"{MUSEUM_BROKER_PLAIN_NAME[1]}/20"), "192.168.0.1", lab_nameserver)
 
 museum_stream_cloud = create_node(server, project, coord_snorth.x + project.grid_unit * -10, coord_snorth.y - project.grid_unit * 2, stream_server_template_id)
 create_link(server, project, snorth["node_id"], 10, museum_stream_cloud["node_id"], 0)
-set_node_network_interfaces(server, project, museum_stream_cloud["node_id"], "eth0", ipaddress.IPv4Interface("192.168.1.2/20"), "192.168.0.1", lab_nameserver)
+set_node_network_interfaces(server, project, museum_stream_cloud["node_id"], "eth0", ipaddress.IPv4Interface(f"{MUSEUM_STREAMSERVER_NAME[1]}/20"), "192.168.0.1", lab_nameserver)
 
 museum_clus_building_plain = create_cluster_of_nodes(server, project, 5, coords_west_zone[0].x - project.grid_unit * 5, coords_west_zone[0].y + project.grid_unit * 2, 5,
                                                      switch_template_id, building_monitor_template_id, switches_west_zone[0]["node_id"], 1,
                                                      ipaddress.IPv4Interface("192.168.17.10/24"), "192.168.17.1", lab_nameserver, 1.5)
 for d in museum_clus_building_plain[1]:
     env = environment_string_to_dict(get_docker_node_environment(server, project, d["node_id"]))
-    env["MQTT_BROKER_ADDR"] = "192.168.1.1"
+    env["MQTT_BROKER_ADDR"] = MUSEUM_BROKER_PLAIN_NAME[0]
     update_docker_node_environment(server, project, d["node_id"], environment_dict_to_string(env))
 
 museum_clus_ipcam = create_cluster_of_nodes(server, project, 2, coords_west_zone[0].x + project.grid_unit * 5, coords_west_zone[0].y + project.grid_unit * 2, 2,
@@ -402,7 +412,7 @@ museum_clus_ipcam = create_cluster_of_nodes(server, project, 2, coords_west_zone
                                             ipaddress.IPv4Interface("192.168.17.15/24"), "192.168.17.1", lab_nameserver, 1.5)
 for d in museum_clus_ipcam[1]:
     env = environment_string_to_dict(get_docker_node_environment(server, project, d["node_id"]))
-    env["STREAM_SERVER_ADDR"] = "192.168.1.2"
+    env["STREAM_SERVER_ADDR"] = MUSEUM_STREAMSERVER_NAME[0]
     env["STREAM_NAME"] = d["name"]
     update_docker_node_environment(server, project, d["node_id"], environment_dict_to_string(env))
 
@@ -411,6 +421,18 @@ museum_clus_ipconsum = create_cluster_of_nodes(server, project, 2, coords_west_z
                                                ipaddress.IPv4Interface("192.168.17.17/24"), "192.168.17.1", lab_nameserver, 1.5)
 for i, d in enumerate(museum_clus_ipconsum[1]):
     env = environment_string_to_dict(get_docker_node_environment(server, project, d["node_id"]))
-    env["STREAM_SERVER_ADDR"] = "192.168.1.2"
+    env["STREAM_SERVER_ADDR"] = MUSEUM_STREAMSERVER_NAME[0]
     env["STREAM_NAME"] = museum_clus_ipcam[1][i]["name"]
     update_docker_node_environment(server, project, d["node_id"], environment_dict_to_string(env))
+
+
+EXTRA_HOSTS = {LABS_BROKER_PLAIN_NAME[0]: LABS_BROKER_PLAIN_NAME[1],
+               STEEL_BROKER_PLAIN_NAME[0]: STEEL_BROKER_PLAIN_NAME[1],
+               NEIGH_BROKER_PLAIN_NAME[0]: NEIGH_BROKER_PLAIN_NAME[1],
+               NEIGH_STREAMSERVER_NAME[0]: NEIGH_STREAMSERVER_NAME[1],
+               MUSEUM_BROKER_PLAIN_NAME[0]: MUSEUM_BROKER_PLAIN_NAME[1],
+               MUSEUM_STREAMSERVER_NAME[0]: MUSEUM_STREAMSERVER_NAME[1]}
+
+update_docker_node_extrahosts(server, project, dns["node_id"], extrahosts_dict_to_string(EXTRA_HOSTS))
+
+check_ipaddrs(server, project)
