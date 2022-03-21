@@ -123,7 +123,7 @@ def telemetry(sleep_t, sleep_t_sd, event, die_event, client_list, coap_bin, psk)
                         else:
                             print(f"...{cmd_stderr}")
 
-                    die_event.wait(timeout=0.5)
+                    die_event.wait(timeout=max(0, random.gauss(0.5, 0.2)))
 
                 print(f"[requests] received payload from {client} = {rcv_payload}")
 
