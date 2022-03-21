@@ -149,6 +149,14 @@ def environment_dict_to_string(env: dict):
     return "\n".join(res)
 
 
+def extrahosts_dict_to_string(hosts: dict):
+    """GNS3 extra_hosts."""
+    res = []
+    for k, v in hosts.items():
+        res.append(f"{k}:{v}")
+    return "\n".join(res)
+
+
 def environment_string_to_dict(env: str):
     """Environment variable string to dictionary."""
     return { pair.split("=", 1)[0]: pair.split("=", 1)[1] for pair in env.split("\n") }
@@ -164,6 +172,14 @@ def get_docker_node_environment(server: Server, project: Project, node_id: str):
 def update_docker_node_environment(server: Server, project: Project, node_id: str, env: str):
     """Update GNS3 docker node environment variables."""
     payload = {"environment": env}
+    req = requests.put(f"http://{server.addr}:{server.port}/v2/compute/projects/{project.id}/docker/nodes/{node_id}", data=json.dumps(payload), auth=(server.user, server.password))
+    req.raise_for_status()
+    return req.json()
+
+
+def update_docker_node_extrahosts(server: Server, project: Project, node_id: str, hosts: str):
+    """Update GNS3 docker node extra_hosts."""
+    payload = {"extra_hosts": hosts}
     req = requests.put(f"http://{server.addr}:{server.port}/v2/compute/projects/{project.id}/docker/nodes/{node_id}", data=json.dumps(payload), auth=(server.user, server.password))
     req.raise_for_status()
     return req.json()
