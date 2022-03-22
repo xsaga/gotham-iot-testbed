@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import random
 import subprocess
 import sys
 import shutil
@@ -21,7 +22,9 @@ config = {"STREAM_SERVER_ADDR": "localhost",
           "STREAM_SERVER_PORT": "8554",
           "STREAM_NAME": "mystream",
           "ACTIVE_TIME": 60,
-          "INACTIVE_TIME": 100}
+          "ACTIVE_TIME_SD": 0,
+          "INACTIVE_TIME": 100,
+          "INACTIVE_TIME_SD": 0}
 
 for key in config.keys():
     try:
@@ -29,7 +32,7 @@ for key in config.keys():
     except KeyError:
         pass
 
-for c in ("ACTIVE_TIME", "INACTIVE_TIME"):
+for c in ("ACTIVE_TIME", "ACTIVE_TIME_SD", "INACTIVE_TIME", "INACTIVE_TIME_SD"):
     config[c] = float(config[c])
 
 ping_bin = shutil.which("ping")
@@ -48,7 +51,7 @@ while True:
     proc = subprocess.Popen(stream_cmd)
 
     try:
-        proc.wait(timeout=config["ACTIVE_TIME"])
+        proc.wait(timeout=max(0, random.gauss(config["ACTIVE_TIME"], config["ACTIVE_TIME_SD"])))
     except subprocess.TimeoutExpired:
         print("Sending SIGTERM to process")
         proc.terminate()
@@ -59,4 +62,4 @@ while True:
     if proc.returncode == 1:
         sys.exit(f"error in {proc.args[0]}")
 
-    time.sleep(config["INACTIVE_TIME"])
+    time.sleep(max(0, random.gauss(config["INACTIVE_TIME"], config["INACTIVE_TIME_SD"])))

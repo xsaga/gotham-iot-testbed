@@ -31,7 +31,9 @@ config = {"MQTT_BROKER_ADDR": "localhost",
           "PING_SLEEP_TIME": 600,
           "PING_SLEEP_TIME_SD": 10,
           "ACTIVE_TIME": 60,
-          "INACTIVE_TIME": 0}
+          "ACTIVE_TIME_SD": 0,
+          "INACTIVE_TIME": 0,
+          "INACTIVE_TIME_SD": 0}
 
 
 def on_connect(client, userdata, flags, rc):
@@ -232,11 +234,11 @@ def main(conf):
     while not die_event.is_set():
         event.set()
         print("[  main   ] telemetry ON")
-        die_event.wait(timeout=conf["ACTIVE_TIME"])
+        die_event.wait(timeout=max(0, random.gauss(conf["ACTIVE_TIME"], conf["ACTIVE_TIME_SD"])))
         if conf["INACTIVE_TIME"] > 0:
             event.clear()
             print("[  main   ] telemetry OFF")
-            die_event.wait(timeout=conf["INACTIVE_TIME"])
+            die_event.wait(timeout=max(0, random.gauss(conf["INACTIVE_TIME"], conf["INACTIVE_TIME_SD"])))
 
     print("[  main   ] exit")
 
@@ -248,7 +250,7 @@ if __name__ == "__main__":
             pass
 
     config["MQTT_QOS"] = int(config["MQTT_QOS"])
-    for c in ("MQTT_KEEPALIVE", "SLEEP_TIME", "SLEEP_TIME_SD", "PING_SLEEP_TIME", "PING_SLEEP_TIME_SD", "ACTIVE_TIME", "INACTIVE_TIME"):
+    for c in ("MQTT_KEEPALIVE", "SLEEP_TIME", "SLEEP_TIME_SD", "PING_SLEEP_TIME", "PING_SLEEP_TIME_SD", "ACTIVE_TIME", "ACTIVE_TIME_SD", "INACTIVE_TIME", "INACTIVE_TIME_SD"):
         config[c] = float(config[c])
 
     config["MQTT_TOPIC_PUB"] = f"{config['MQTT_TOPIC_PUB']}/rig-{socket.gethostname()}"
