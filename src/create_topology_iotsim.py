@@ -145,7 +145,10 @@ coord_rnorth = Position(1000, -1700)
 coord_rwest = Position(coord_rnorth.x - project.grid_unit * 2, coord_rnorth.y + project.grid_unit * 4)
 coord_reast = Position(coord_rnorth.x + project.grid_unit * 2, coord_rnorth.y + project.grid_unit * 4)
 
-# backbone routers
+####################
+# backbone routers #
+####################
+
 rnorth = create_node(server, project, coord_rnorth.x, coord_rnorth.y, router_template_id)
 rwest = create_node(server, project, coord_rwest.x, coord_rwest.y, router_template_id)
 reast = create_node(server, project, coord_reast.x, coord_reast.y, router_template_id)
@@ -173,7 +176,10 @@ if AUTO_CONFIGURE_ROUTERS:
         configure_vyos_image_on_node(router_node["node_id"], hostname, port, router_config, pre_exec=terminal_cmd)
         time.sleep(10)
 
-# backbone switches
+#####################
+# backbone switches #
+#####################
+
 coord_snorth = Position(coord_rnorth.x, coord_rnorth.y - project.grid_unit * 2)
 coord_swest = Position(coord_rwest.x - project.grid_unit * 10, coord_rwest.y)
 coord_seast = Position(coord_reast.x + project.grid_unit * 25, coord_reast.y)
@@ -255,7 +261,9 @@ if AUTO_CONFIGURE_ROUTERS:
 
 lab_nameserver = sim_config["LAB_DNS_IPADDR"]
 
-# Mirai
+#########
+# Mirai #
+#########
 
 mirai_cnc = create_node(server, project, coords_east_zone[0].x - project.grid_unit, coords_east_zone[0].y + project.grid_unit * 2, Mirai_cnc_template_id)
 create_link(server, project, switches_east_zone[0]["node_id"], 1, mirai_cnc["node_id"], 0)
@@ -277,29 +285,41 @@ mirai_bot = create_node(server, project, coord_snorth.x + project.grid_unit * 16
 create_link(server, project, snorth["node_id"], 1, mirai_bot["node_id"], 0)
 set_node_network_interfaces(server, project, mirai_bot["node_id"], "eth0", ipaddress.IPv4Interface("192.168.0.100/20"), "192.168.0.1", lab_nameserver)
 
-# Merlin
+##########
+# Merlin #
+##########
 
 merlin_cnc = create_node(server, project, coords_east_zone[1].x, coords_east_zone[1].y + project.grid_unit * 2, Merlin_template_id)
 create_link(server, project, switches_east_zone[1]["node_id"], 1, merlin_cnc["node_id"], 0)
 set_node_network_interfaces(server, project, merlin_cnc["node_id"], "eth0", ipaddress.IPv4Interface("192.168.34.10/24"), "192.168.34.1", lab_nameserver)
 
 
-# Scan
+########
+# Scan #
+########
+
 # TODO.
 
-# DNS
+#######
+# DNS #
+#######
+
 dns = create_node(server, project, coord_snorth.x + project.grid_unit * 12, coord_snorth.y - project.grid_unit * 2, DNS_template_id)
 create_link(server, project, snorth["node_id"], 2, dns["node_id"], 0)
 set_node_network_interfaces(server, project, dns["node_id"], "eth0", ipaddress.IPv4Interface(f"{lab_nameserver}/20"), "192.168.0.1", "127.0.0.1")
 
-# NTP
+#######
+# NTP #
+#######
 
 ntp = create_node(server, project, coord_snorth.x + project.grid_unit * 8, coord_snorth.y - project.grid_unit * 2, NTP_template_id)
 create_link(server, project, snorth["node_id"], 3, ntp["node_id"], 0)
 set_node_network_interfaces(server, project, ntp["node_id"], "eth0", ipaddress.IPv4Interface("192.168.0.3/20"), "192.168.0.1", lab_nameserver)
 
 
-# Labs
+########
+# Labs #
+########
 
 LABS_BROKER_PLAIN_NAME = (f"broker.labs.{sim_config['LOCAL_DOMAIN']}", "192.168.4.2")
 
@@ -333,7 +353,9 @@ for d in labs_clus_hydr_plain[1]:
     update_docker_node_environment(server, project, d["node_id"], environment_dict_to_string(env))
 
 
-# Steel
+#########
+# Steel #
+#########
 
 STEEL_BROKER_PLAIN_NAME = (f"broker.steel.{sim_config['LOCAL_DOMAIN']}", "192.168.3.1")
 
@@ -363,7 +385,9 @@ for d in steel_clus_pred_plain[1]:
     update_docker_node_environment(server, project, d["node_id"], environment_dict_to_string(env))
 
 
-# Neigh
+################
+# Neighborhood #
+################
 
 NEIGH_BROKER_PLAIN_NAME = (f"broker.neigh.{sim_config['LOCAL_DOMAIN']}", "192.168.2.1")
 NEIGH_STREAMSERVER_NAME = (f"ipcam.neigh.{sim_config['LOCAL_DOMAIN']}", "192.168.2.2")
@@ -398,7 +422,9 @@ for d in neigh_clus_ipcam[1]:
     env["STREAM_NAME"] = d["name"]
     update_docker_node_environment(server, project, d["node_id"], environment_dict_to_string(env))
 
-# Museum
+##########
+# Museum #
+##########
 
 MUSEUM_BROKER_PLAIN_NAME = (f"broker.museum.{sim_config['LOCAL_DOMAIN']}", "192.168.1.1")
 MUSEUM_STREAMSERVER_NAME = (f"ipcam.museum.{sim_config['LOCAL_DOMAIN']}", "192.168.1.2")
@@ -440,6 +466,8 @@ for i, d in enumerate(museum_clus_ipconsum[1]):
     env["STREAM_SERVER_ADDR"] = MUSEUM_STREAMSERVER_NAME[0]
     env["STREAM_NAME"] = museum_clus_ipcam[1][i]["name"]
     update_docker_node_environment(server, project, d["node_id"], environment_dict_to_string(env))
+
+
 
 
 EXTRA_HOSTS = {LABS_BROKER_PLAIN_NAME[0]: LABS_BROKER_PLAIN_NAME[1],
