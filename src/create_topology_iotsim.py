@@ -478,6 +478,24 @@ for d in neigh_clus_ipcam[1]:
     env["STREAM_NAME"] = d["name"]
     update_docker_node_environment(server, project, d["node_id"], environment_dict_to_string(env))
 
+neigh_clus_air_plain = create_cluster_of_nodes(server, project, 1, coords_west_zone[1].x + project.grid_unit * 5, coords_west_zone[1].y + project.grid_unit * 7, 1,
+                                               switch_template_id, air_quality_template_id, switches_west_zone[1]["node_id"], 3,
+                                               ipaddress.IPv4Interface("192.168.18.17/24"), "192.168.18.1", lab_nameserver, 1.5)
+for d in neigh_clus_air_plain[1]:
+    env = environment_string_to_dict(get_docker_node_environment(server, project, d["node_id"]))
+    env["MQTT_BROKER_ADDR"] = NEIGH_BROKER_PLAIN_NAME[0]
+    update_docker_node_environment(server, project, d["node_id"], environment_dict_to_string(env))
+
+neigh_clus_city = create_cluster_of_nodes(server, project, 1, coords_west_zone[1].x + project.grid_unit * 5, coords_west_zone[1].y + project.grid_unit * 12, 1,
+                                          switch_template_id, city_power_template_id, switches_west_zone[1]["node_id"], 4,
+                                          ipaddress.IPv4Interface("192.168.18.18/24"), "192.168.18.1", lab_nameserver, 1.5)
+neigh_city_cloud = create_node(server, project, coord_neigh_snorth.x + project.grid_unit * 1, coord_neigh_snorth.y - project.grid_unit * 4, city_power_cloud_template_id)
+create_link(server, project, neigh_snorth["node_id"], 3, neigh_city_cloud["node_id"], 0)
+set_node_network_interfaces(server, project, neigh_city_cloud["node_id"], "eth0", ipaddress.IPv4Interface("192.168.2.3/20"), "192.168.0.1", lab_nameserver)
+env = environment_string_to_dict(get_docker_node_environment(server, project, neigh_city_cloud["node_id"]))
+env["COAP_ADDR_LIST"] = "192.168.18.18"
+update_docker_node_environment(server, project, neigh_city_cloud["node_id"], environment_dict_to_string(env))
+
 
 ##########
 # Museum #
@@ -515,7 +533,7 @@ for d in museum_clus_ipcam[1]:
     env["STREAM_NAME"] = d["name"]
     update_docker_node_environment(server, project, d["node_id"], environment_dict_to_string(env))
 
-museum_clus_ipconsum = create_cluster_of_nodes(server, project, 2, coords_west_zone[0].x + project.grid_unit * 5, coords_west_zone[0].y + project.grid_unit * 6, 2,
+museum_clus_ipconsum = create_cluster_of_nodes(server, project, 2, coords_west_zone[0].x + project.grid_unit * 5, coords_west_zone[0].y + project.grid_unit * 7, 2,
                                                switch_template_id, stream_consumer_template_id, switches_west_zone[0]["node_id"], 3,
                                                ipaddress.IPv4Interface("192.168.17.17/24"), "192.168.17.1", lab_nameserver, 1.5)
 for i, d in enumerate(museum_clus_ipconsum[1]):
