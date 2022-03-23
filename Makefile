@@ -11,7 +11,7 @@ include $(CONFIG_FILE)
 
 all: buildstatus/DNS buildstatus/certificates buildstatus/NTP \
      buildstatus/Merlin buildstatus/Mirai_builder buildstatus/Mirai_cnc buildstatus/Mirai_bot buildstatus/Mirai_scan_listener buildstatus/Mirai_loader buildstatus/Mirai_wget_loader \
-     buildstatus/scanner \
+     buildstatus/scanner buildstatus/amplification_coap \
      buildstatus/mqtt_broker_1.6 buildstatus/mqtt_broker_tls \
      buildstatus/mqtt_client_t1 buildstatus/mqtt_client_t2 \
      buildstatus/air_quality buildstatus/cooler_motor buildstatus/predictive_maintenance \
@@ -91,6 +91,10 @@ buildstatus/Mirai_wget_loader: Dockerfiles/malware/Mirai/Dockerfile.wget_loader 
 
 buildstatus/scanner: Dockerfiles/malware/scanner/Dockerfile
 	$(BUILD_CMD) --file $< --tag iotsim/scanner Dockerfiles/malware/scanner
+	@touch $@
+
+buildstatus/amplification_coap: Dockerfiles/malware/amplification_coap/Dockerfile
+	$(BUILD_CMD) --file $< --tag iotsim/amplification-coap Dockerfiles/malware/amplification_coap
 	@touch $@
 
 buildstatus/mqtt_broker_1.6: Dockerfiles/iot/mqtt_broker/Dockerfile.1.6
