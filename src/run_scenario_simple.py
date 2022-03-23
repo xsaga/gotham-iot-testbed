@@ -26,6 +26,8 @@ if len(get_all_nodes(server, project)) == 0:
     print(f"Project {PROJECT_NAME} is empty!")
     sys.exit(1)
 
+check_ipaddrs(server, project)
+
 #######
 # Run #
 #######
