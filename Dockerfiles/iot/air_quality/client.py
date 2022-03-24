@@ -19,6 +19,7 @@ config = {"MQTT_BROKER_ADDR": "localhost",
           "MQTT_TOPIC_PUB": "city/air",
           "MQTT_QOS": 0,
           "TLS": "",
+          "TLS_INSECURE": "false",
           "SLEEP_TIME": 600,
           "SLEEP_TIME_SD": 10,
           "PING_SLEEP_TIME": 60,
@@ -259,9 +260,8 @@ if __name__ == "__main__":
     if config["TLS"]:
         config["TLS"] = True
         config["ca_cert_file"] = "/iot-sim-ca.crt"
-        # Communications are encrypted but the server hostname verification is disabled
-        # TODO include option for TLS insecure = False (using the DNS set in the configuration file to get the address of the broker)
-        config["tls_insecure"] = True
+        # With tls_insecure=True communications are encrypted but the server hostname verification is disabled
+        config["tls_insecure"] = config["TLS_INSECURE"].casefold() == "true"
         if not os.path.isfile(config["ca_cert_file"]):
             sys.exit(f"[  setup  ] TLS enabled but ca cert file `{config['ca_cert_file']}' does not exist. Exiting.")
     else:
