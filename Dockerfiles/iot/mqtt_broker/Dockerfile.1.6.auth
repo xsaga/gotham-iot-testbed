@@ -1,0 +1,9 @@
+FROM eclipse-mosquitto:1.6
+
+ADD --chown=mosquitto:mosquitto mosquitto_1.6.auth.passwd /mosquitto/config/mosquitto.passwd
+ADD --chown=mosquitto:mosquitto mosquitto_1.6.auth.conf /mosquitto/config/mosquitto.conf
+
+RUN cat /mosquitto/config/mosquitto.passwd &&\
+    mosquitto_passwd -U /mosquitto/config/mosquitto.passwd &&\
+    cat /mosquitto/config/mosquitto.passwd
+

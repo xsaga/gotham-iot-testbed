@@ -12,7 +12,7 @@ include $(CONFIG_FILE)
 all: buildstatus/DNS buildstatus/certificates buildstatus/NTP \
      buildstatus/Merlin buildstatus/Mirai_builder buildstatus/Mirai_cnc buildstatus/Mirai_bot buildstatus/Mirai_scan_listener buildstatus/Mirai_loader buildstatus/Mirai_wget_loader \
      buildstatus/scanner buildstatus/amplification_coap buildstatus/mqtt_attacks buildstatus/metasploit \
-     buildstatus/mqtt_broker_1.6 buildstatus/mqtt_broker_tls \
+     buildstatus/mqtt_broker_1.6 buildstatus/mqtt_broker_1.6_auth buildstatus/mqtt_broker_tls \
      buildstatus/mqtt_client_t1 buildstatus/mqtt_client_t2 \
      buildstatus/air_quality buildstatus/cooler_motor buildstatus/predictive_maintenance \
      buildstatus/hydraulic_system buildstatus/building_monitor buildstatus/domotic_monitor \
@@ -107,6 +107,10 @@ buildstatus/metasploit: Dockerfiles/malware/metasploit/Dockerfile
 
 buildstatus/mqtt_broker_1.6: Dockerfiles/iot/mqtt_broker/Dockerfile.1.6
 	$(BUILD_CMD) --file $< --tag iotsim/mqtt-broker-1.6 Dockerfiles/iot/mqtt_broker
+	@touch $@
+
+buildstatus/mqtt_broker_1.6_auth: Dockerfiles/iot/mqtt_broker/Dockerfile.1.6.auth Dockerfiles/iot/mqtt_broker/mosquitto_1.6.auth.conf Dockerfiles/iot/mqtt_broker/mosquitto_1.6.auth.passwd
+	$(BUILD_CMD) --file $< --tag iotsim/mqtt-broker-1.6-auth Dockerfiles/iot/mqtt_broker
 	@touch $@
 
 buildstatus/mqtt_broker_tls: Dockerfiles/iot/mqtt_broker/Dockerfile.tls Dockerfiles/iot/mqtt_broker/mosquitto_tls.conf buildstatus/certificates
