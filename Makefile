@@ -97,7 +97,7 @@ buildstatus/amplification_coap: Dockerfiles/malware/amplification_coap/Dockerfil
 	$(BUILD_CMD) --file $< --tag iotsim/amplification-coap Dockerfiles/malware/amplification_coap
 	@touch $@
 
-buildstatus/mqtt_attacks: Dockerfiles/malware/mqtt_attacks/Dockerfile
+buildstatus/mqtt_attacks: Dockerfiles/malware/mqtt_attacks/Dockerfile buildstatus/certificates
 	$(BUILD_CMD) --file $< --tag iotsim/mqtt-attacks Dockerfiles/malware/mqtt_attacks
 	@touch $@
 
