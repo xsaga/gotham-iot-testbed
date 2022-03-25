@@ -18,6 +18,7 @@ import paho.mqtt.publish as publish
 
 config = {"MQTT_BROKER_ADDR": "localhost",
           "MQTT_TOPIC_PUB": "building",
+          "MQTT_AUTH": "",
           "MQTT_QOS": 0,
           "TLS": "",
           "TLS_INSECURE": "false",
@@ -83,7 +84,7 @@ def broker_ping(sleep_t, sleep_t_sd, die_event, broker_addr, ping_bin):
     print("[  ping   ] killing thread")
 
 
-def telemetry(sleep_t, sleep_t_sd, event, die_event, mqtt_topic, broker_addr, mqtt_qos, mqtt_tls, mqtt_cacert, mqtt_tls_insecure):
+def telemetry(sleep_t, sleep_t_sd, event, die_event, mqtt_topic, broker_addr, mqtt_auth, mqtt_qos, mqtt_tls, mqtt_cacert, mqtt_tls_insecure):
     """Periodically send sensor data to the MQTT broker."""
     print("[telemetry] starting thread")
     dataset_fname = "/energydata_complete.csv.xz"
@@ -214,7 +215,7 @@ def telemetry(sleep_t, sleep_t_sd, event, die_event, mqtt_topic, broker_addr, mq
             # publish multiple messages to the broker and disconnect cleanly.
             try:
                 # publish.multiple modifies the tls dictionary (pops 'insecure' key). Pass a copy.
-                publish.multiple(msgs, hostname=broker_addr, port=port, tls=tls_arg.copy() if tls_arg else None)
+                publish.multiple(msgs, hostname=broker_addr, port=port, auth=mqtt_auth, tls=tls_arg.copy() if tls_arg else None)
             except ConnectionRefusedError as e:
                 print(f"[telemetry] {e}")
                 die_event.set()
@@ -243,7 +244,7 @@ def main(conf):
                                         args=(conf["SLEEP_TIME"],
                                               conf["SLEEP_TIME_SD"],
                                               event, die_event,
-                                              conf["MQTT_TOPIC_PUB"], conf["MQTT_BROKER_ADDR"], conf["MQTT_QOS"],
+                                              conf["MQTT_TOPIC_PUB"], conf["MQTT_BROKER_ADDR"], conf["mqtt_auth"], conf["MQTT_QOS"],
                                               conf["TLS"], conf["ca_cert_file"], conf["tls_insecure"]),
                                         kwargs={})
     broker_ping_thread = threading.Thread(target=broker_ping,
@@ -270,6 +271,7 @@ def main(conf):
 
     print("[  main   ] exit")
 
+
 if __name__ == "__main__":
     for key in config.keys():
         try:
@@ -283,6 +285,16 @@ if __name__ == "__main__":
 
     config["MQTT_TOPIC_PUB"] = f"{config['MQTT_TOPIC_PUB']}/id-{socket.gethostname()}"
     print(f"[  setup  ] selected MQTT topic: {config['MQTT_TOPIC_PUB']}")
+
+    if config["MQTT_AUTH"]:
+        user_pass = config["MQTT_AUTH"].split(":", 1)
+        if len(user_pass) == 1:
+            config["mqtt_auth"] = {"username": user_pass[0], "password": None}
+        else:
+            config["mqtt_auth"] = {"username": user_pass[0], "password": user_pass[-1]}
+    else:
+        config["mqtt_auth"] = None
+    print(f"[  setup  ] MQTT authentication: {config['mqtt_auth']}")
 
     config["ping_bin"] = shutil.which("ping")
     if not config["ping_bin"]:
