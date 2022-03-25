@@ -60,6 +60,14 @@ Mirai_loader_template_id = get_template_id_from_name(templates, "iotsim-mirai-lo
 assert Mirai_loader_template_id
 Mirai_wget_loader_template_id = get_template_id_from_name(templates, "iotsim-mirai-wget-loader")
 assert Mirai_wget_loader_template_id
+scanner_template_id = get_template_id_from_name(templates, "iotsim-scanner")
+assert scanner_template_id
+amplification_coap_template_id = get_template_id_from_name(templates, "iotsim-amplification-coap")
+assert amplification_coap_template_id
+mqtt_attacks_template_id = get_template_id_from_name(templates, "iotsim-mqtt-attacks")
+assert mqtt_attacks_template_id
+metasploit_template_id = get_template_id_from_name(templates, "iotsim-metasploit")
+assert metasploit_template_id
 mqtt_broker_1_6_template_id = get_template_id_from_name(templates, "iotsim-mqtt-broker-1.6")
 assert mqtt_broker_1_6_template_id
 mqtt_broker_tls_template_id = get_template_id_from_name(templates, "iotsim-mqtt-broker-tls")
@@ -329,11 +337,25 @@ create_link(server, project, switches_east_zone[1]["node_id"], 1, merlin_cnc["no
 set_node_network_interfaces(server, project, merlin_cnc["node_id"], "eth0", ipaddress.IPv4Interface("192.168.34.10/24"), "192.168.34.1", lab_nameserver)
 
 
-########
-# Scan #
-########
+###################################
+# Scanner and mqtt / coap attacks #
+###################################
 
-# TODO.
+scanner = create_node(server, project, coords_east_zone[2].x - project.grid_unit, coords_east_zone[2].y + project.grid_unit * 2, scanner_template_id)
+create_link(server, project, switches_east_zone[2]["node_id"], 1, scanner["node_id"], 0)
+set_node_network_interfaces(server, project, scanner["node_id"], "eth0", ipaddress.IPv4Interface("192.168.35.10/24"), "192.168.35.1", lab_nameserver)
+
+amplification_coap = create_node(server, project, coords_east_zone[2].x + project.grid_unit, coords_east_zone[2].y + project.grid_unit * 2, amplification_coap_template_id)
+create_link(server, project, switches_east_zone[2]["node_id"], 2, amplification_coap["node_id"], 0)
+set_node_network_interfaces(server, project, amplification_coap["node_id"], "eth0", ipaddress.IPv4Interface("192.168.35.11/24"), "192.168.35.1", lab_nameserver)
+
+mqtt_attacks = create_node(server, project, coords_east_zone[2].x - project.grid_unit, coords_east_zone[2].y + project.grid_unit * 3, mqtt_attacks_template_id)
+create_link(server, project, switches_east_zone[2]["node_id"], 3, mqtt_attacks["node_id"], 0)
+set_node_network_interfaces(server, project, mqtt_attacks["node_id"], "eth0", ipaddress.IPv4Interface("192.168.35.12/24"), "192.168.35.1", lab_nameserver)
+
+metasploit = create_node(server, project, coords_east_zone[2].x + project.grid_unit, coords_east_zone[2].y + project.grid_unit * 3, metasploit_template_id)
+create_link(server, project, switches_east_zone[2]["node_id"], 4, metasploit["node_id"], 0)
+set_node_network_interfaces(server, project, metasploit["node_id"], "eth0", ipaddress.IPv4Interface("192.168.35.13/24"), "192.168.35.1", lab_nameserver)
 
 
 ########
