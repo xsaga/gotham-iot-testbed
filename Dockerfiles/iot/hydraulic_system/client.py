@@ -255,8 +255,10 @@ if __name__ == "__main__":
         except KeyError:
             pass
 
-    config["MQTT_QOS"] = int(config["MQTT_QOS"])
-    for c in ("MQTT_KEEPALIVE", "SLEEP_TIME", "SLEEP_TIME_SD", "PING_SLEEP_TIME", "PING_SLEEP_TIME_SD", "ACTIVE_TIME", "ACTIVE_TIME_SD", "INACTIVE_TIME", "INACTIVE_TIME_SD"):
+    for c in ("MQTT_QOS", "MQTT_KEEPALIVE"):
+        config[c] = int(config[c])
+
+    for c in ("SLEEP_TIME", "SLEEP_TIME_SD", "PING_SLEEP_TIME", "PING_SLEEP_TIME_SD", "ACTIVE_TIME", "ACTIVE_TIME_SD", "INACTIVE_TIME", "INACTIVE_TIME_SD"):
         config[c] = float(config[c])
 
     config["MQTT_TOPIC_PUB"] = f"{config['MQTT_TOPIC_PUB']}/rig-{socket.gethostname()}"
