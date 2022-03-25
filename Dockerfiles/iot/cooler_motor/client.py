@@ -130,7 +130,7 @@ def telemetry(sleep_t, sleep_t_sd, event, die_event, mqtt_topic, broker_addr, mq
         port = 1883
 
     try:
-        mqttc.connect(host=broker_addr, port=port, keepalive=60)
+        mqttc.connect(host=broker_addr, port=port, keepalive=mqtt_keepalive)
     except ConnectionRefusedError as e:
         print(e)
         die_event.set()
