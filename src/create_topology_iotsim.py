@@ -70,6 +70,8 @@ metasploit_template_id = get_template_id_from_name(templates, "iotsim-metasploit
 assert metasploit_template_id
 mqtt_broker_1_6_template_id = get_template_id_from_name(templates, "iotsim-mqtt-broker-1.6")
 assert mqtt_broker_1_6_template_id
+mqtt_broker_1_6_auth_template_id = get_template_id_from_name(templates, "iotsim-mqtt-broker-1.6-auth")
+assert mqtt_broker_1_6_auth_template_id
 mqtt_broker_tls_template_id = get_template_id_from_name(templates, "iotsim-mqtt-broker-tls")
 assert mqtt_broker_tls_template_id
 mqtt_client_t1_template_id = get_template_id_from_name(templates, "iotsim-mqtt-client-t1")
@@ -417,15 +419,15 @@ for d in labs_clus_hydr_tls[1]:
 # Steel #
 #########
 
-STEEL_BROKER_PLAIN_NAME = (f"broker.steel.{sim_config['LOCAL_DOMAIN']}", "192.168.3.1")
+STEEL_BROKER_AUTH_NAME = (f"broker.steel.{sim_config['LOCAL_DOMAIN']}", "192.168.3.1")
 
 coord_steel_snorth = Position(coord_snorth.x + project.grid_unit * 0, coord_snorth.y - project.grid_unit * 2)
 steel_snorth = create_node(server, project, coord_steel_snorth.x, coord_steel_snorth.y, switch_template_id)
 create_link(server, project, snorth["node_id"], 3, steel_snorth["node_id"], 0)
 
-steel_mqtt_cloud_plain = create_node(server, project, coord_steel_snorth.x, coord_steel_snorth.y - project.grid_unit * 2, mqtt_broker_1_6_template_id)
-create_link(server, project, steel_snorth["node_id"], 1, steel_mqtt_cloud_plain["node_id"], 0)
-set_node_network_interfaces(server, project, steel_mqtt_cloud_plain["node_id"], "eth0", ipaddress.IPv4Interface(f"{STEEL_BROKER_PLAIN_NAME[1]}/20"), "192.168.0.1", lab_nameserver)
+steel_mqtt_cloud_auth = create_node(server, project, coord_steel_snorth.x, coord_steel_snorth.y - project.grid_unit * 2, mqtt_broker_1_6_auth_template_id)
+create_link(server, project, steel_snorth["node_id"], 1, steel_mqtt_cloud_auth["node_id"], 0)
+set_node_network_interfaces(server, project, steel_mqtt_cloud_auth["node_id"], "eth0", ipaddress.IPv4Interface(f"{STEEL_BROKER_AUTH_NAME[1]}/20"), "192.168.0.1", lab_nameserver)
 
 
 steel_clus_cooler_plain = create_cluster_of_nodes(server, project, 10, coords_west_zone[2].x - project.grid_unit * 5, coords_west_zone[2].y + project.grid_unit * 2, 5,
@@ -433,7 +435,9 @@ steel_clus_cooler_plain = create_cluster_of_nodes(server, project, 10, coords_we
                                                   ipaddress.IPv4Interface("192.168.19.10/24"), "192.168.19.1", lab_nameserver, 1.5)
 for d in steel_clus_cooler_plain[1]:
     env = environment_string_to_dict(get_docker_node_environment(server, project, d["node_id"]))
-    env["MQTT_BROKER_ADDR"] = STEEL_BROKER_PLAIN_NAME[0]
+    env["MQTT_BROKER_ADDR"] = STEEL_BROKER_AUTH_NAME[0]
+    # See the file Dockerfiles/iot/mqtt_broker/mosquitto_1.6.auth.passwd
+    env["MQTT_AUTH"] = "admin:adminpass"
     update_docker_node_environment(server, project, d["node_id"], environment_dict_to_string(env))
 
 steel_clus_pred_plain = create_cluster_of_nodes(server, project, 10, coords_west_zone[2].x + project.grid_unit * 5, coords_west_zone[2].y + project.grid_unit * 2, 5,
@@ -441,7 +445,9 @@ steel_clus_pred_plain = create_cluster_of_nodes(server, project, 10, coords_west
                                                 ipaddress.IPv4Interface("192.168.19.20/24"), "192.168.19.1", lab_nameserver, 1.5)
 for d in steel_clus_pred_plain[1]:
     env = environment_string_to_dict(get_docker_node_environment(server, project, d["node_id"]))
-    env["MQTT_BROKER_ADDR"] = STEEL_BROKER_PLAIN_NAME[0]
+    env["MQTT_BROKER_ADDR"] = STEEL_BROKER_AUTH_NAME[0]
+    # See the file Dockerfiles/iot/mqtt_broker/mosquitto_1.6.auth.passwd
+    env["MQTT_AUTH"] = "production:passw0rd"
     update_docker_node_environment(server, project, d["node_id"], environment_dict_to_string(env))
 
 steel_clus_cooler_tls = create_cluster_of_nodes(server, project, 5, coords_west_zone[2].x - project.grid_unit * 5, coords_west_zone[2].y + project.grid_unit * 7, 5,
@@ -568,7 +574,7 @@ for i, d in enumerate(museum_clus_ipconsum[1]):
 
 
 EXTRA_HOSTS = {LABS_BROKER_PLAIN_NAME[0]: LABS_BROKER_PLAIN_NAME[1],
-               STEEL_BROKER_PLAIN_NAME[0]: STEEL_BROKER_PLAIN_NAME[1],
+               STEEL_BROKER_AUTH_NAME[0]: STEEL_BROKER_AUTH_NAME[1],
                NEIGH_BROKER_PLAIN_NAME[0]: NEIGH_BROKER_PLAIN_NAME[1],
                NEIGH_STREAMSERVER_NAME[0]: NEIGH_STREAMSERVER_NAME[1],
                MUSEUM_BROKER_PLAIN_NAME[0]: MUSEUM_BROKER_PLAIN_NAME[1],
