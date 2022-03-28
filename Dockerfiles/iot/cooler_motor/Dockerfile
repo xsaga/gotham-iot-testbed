@@ -2,6 +2,7 @@ FROM ubuntu:focal
 
 RUN apt update && apt install -y --no-install-recommends \
     iputils-ping \
+    sntp \
     python3 \
     python3-pip \
     && rm -rf /var/lib/apt/lists/*

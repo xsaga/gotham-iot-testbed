@@ -31,7 +31,10 @@ config = {"MQTT_BROKER_ADDR": "localhost",
           "ACTIVE_TIME": 600,
           "ACTIVE_TIME_SD": 0,
           "INACTIVE_TIME": 300,
-          "INACTIVE_TIME_SD": 0}
+          "INACTIVE_TIME_SD": 0,
+          "NTP_SERVER": "localhost",
+          "NTP_SLEEP_TIME": 60,
+          "NTP_SLEEP_TIME_SD": 0}
 
 
 def on_connect(client, userdata, flags, rc):
@@ -96,6 +99,23 @@ def broker_ping(sleep_t, sleep_t_sd, die_event, broker_addr, ping_bin):
         print(f"[  ping   ] sleeping for {sleep_time}s")
         die_event.wait(timeout=sleep_time)
     print("[  ping   ] killing thread")
+
+
+def ntp_client(sleep_t, sleep_t_sd, die_event, ntp_server, ntp_bin):
+    """Periodically poll NTP server."""
+    cmd = [ntp_bin, '--ipv4', ntp_server]
+    while not die_event.is_set():
+        print(f"[   ntp   ] polling NTP server {ntp_server}")
+
+        result = subprocess.run(cmd, capture_output=False, check=False)
+        if result.returncode > 0:
+            print(f"[   ntp   ] {cmd[0]} failed with return code {result.returncode}")
+
+        sleep_time = random.gauss(sleep_t, sleep_t_sd)
+        sleep_time = sleep_t if sleep_time < 0 else sleep_time
+        print(f"[   ntp   ] sleeping for {sleep_time}s")
+        die_event.wait(timeout=sleep_time)
+    print("[   ntp   ] killing thread")
 
 
 def telemetry(sleep_t, sleep_t_sd, event, die_event, mqtt_topic, broker_addr, mqtt_auth, mqtt_qos, mqtt_tls, mqtt_cacert, mqtt_tls_insecure, mqtt_keepalive):
@@ -189,10 +209,17 @@ def main(conf):
                                             args=(conf["PING_SLEEP_TIME"], conf["PING_SLEEP_TIME_SD"], die_event, conf["MQTT_BROKER_ADDR"], conf["ping_bin"]),
                                             kwargs={},
                                             daemon=False)
+    ntp_client_thread = threading.Thread(target=ntp_client,
+                                         name="ntp_client",
+                                         args=(conf["NTP_SLEEP_TIME"], conf["NTP_SLEEP_TIME_SD"], die_event, conf["NTP_SERVER"], conf["ntp_bin"]),
+                                         kwargs={},
+                                         daemon=False)
 
     die_event.clear()
     broker_ping_thread.start()
     telemetry_thread.start()
+    if conf["ntp_bin"]:
+        ntp_client_thread.start()
     die_event.wait(timeout=5)
 
     print("[  main   ] starting loop")
@@ -219,7 +246,7 @@ if __name__ == "__main__":
     for c in ("MQTT_QOS", "MQTT_KEEPALIVE"):
         config[c] = int(config[c])
 
-    for c in ("SLEEP_TIME", "SLEEP_TIME_SD", "PING_SLEEP_TIME", "PING_SLEEP_TIME_SD", "ACTIVE_TIME", "ACTIVE_TIME_SD", "INACTIVE_TIME", "INACTIVE_TIME_SD"):
+    for c in ("SLEEP_TIME", "SLEEP_TIME_SD", "PING_SLEEP_TIME", "PING_SLEEP_TIME_SD", "ACTIVE_TIME", "ACTIVE_TIME_SD", "INACTIVE_TIME", "INACTIVE_TIME_SD", "NTP_SLEEP_TIME", "NTP_SLEEP_TIME_SD"):
         config[c] = float(config[c])
 
     config["MQTT_TOPIC_PUB"] = f"{config['MQTT_TOPIC_PUB']}/cooler-{socket.gethostname()}"
@@ -238,6 +265,13 @@ if __name__ == "__main__":
     config["ping_bin"] = shutil.which("ping")
     if not config["ping_bin"]:
         sys.exit("[  setup  ] No 'ping' binary found. Exiting.")
+
+    config["ntp_bin"] = shutil.which("sntp")
+    if not config["ntp_bin"]:
+        print("[  setup  ] No 'sntp' binary found.")
+    if config["NTP_SLEEP_TIME"] <= 0:
+        config["ntp_bin"] = None
+        print("[  setup  ] Disabling ntp.")
 
     if not ping(config["ping_bin"], config["MQTT_BROKER_ADDR"]):
         sys.exit(f"[  setup  ] {config['MQTT_BROKER_ADDR']} is down")
