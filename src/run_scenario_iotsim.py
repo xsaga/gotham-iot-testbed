@@ -56,7 +56,7 @@ for n in iot_servers:
     start_node(server, project, n.id)
     time.sleep(0.1)
 
-for n in iot_rest:
+for n in sorted(iot_rest, key=lambda x: x.name):
     print(f"Starting {n.name}")
     start_node(server, project, n.id)
     time.sleep(0.1)
