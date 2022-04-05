@@ -274,6 +274,14 @@ def get_node_telnet_host_port(server: Server, project: Project, node_id: str) ->
     return (host, req.json()["console"])
 
 
+def get_node_docker_container_id(server: Server, project: Project, node_id: str) -> str:
+    """Get the Docker container id."""
+    req = requests.get(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/nodes/{node_id}", auth=(server.user, server.password))
+    req.raise_for_status()
+    assert req.json()["node_type"] == "docker"
+    return req.json()["properties"]["container_id"]
+
+
 def get_links_id_from_node_connected_to_name_regexp(server: Server, project: Project, node_id: str, name_regexp: Pattern) -> Optional[List[Item]]:
     """Get all the link IDs from node node_id connected to other nodes with names that match name_regexp regular expression."""
     req = requests.get(f"http://{server.addr}:{server.port}/v2/projects/{project.id}/nodes/{node_id}", auth=(server.user, server.password))
