@@ -1,6 +1,22 @@
-FROM alpine
+FROM ubuntu:focal
 
-RUN apk add --no-cache ffmpeg python3
+RUN apt update && apt install -y --no-install-recommends \
+    iputils-ping \
+    python3 \
+    ffmpeg \
+    wget \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# To make this device vulnerable to Mirai, we need a telnet server and the busybox shell.
+# busybox from Debian repos does not include 'telnetd'.
+# By default, this does not make it vulnerable because telnetd is not running automatically.
+RUN wget https://busybox.net/downloads/binaries/1.35.0-x86_64-linux-musl/busybox &&\
+    chmod +x busybox &&\
+    mv busybox /bin &&\
+    echo "/bin/busybox sh" > /bin/busyboxsh &&\
+    chmod +x /bin/busyboxsh
+
 COPY street_london_rainy_night.mp4 /original.mp4
 COPY ip_camera.py /ip_camera.py
 RUN chmod +x /ip_camera.py
