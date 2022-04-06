@@ -1,4 +1,4 @@
-"""Create iot simulation topology (simple)."""
+"""Create iot simulation topology (iot-sim)."""
 
 import configparser
 import ipaddress

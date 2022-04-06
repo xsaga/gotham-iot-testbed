@@ -1,8 +1,10 @@
-"""Run scenario using the iot simulation topology (simple)."""
+"""Run scenario using the iot simulation topology (iot-sim)."""
 
 import re
 import sys
 import time
+
+import docker
 
 from gns3utils import *
 
@@ -29,6 +31,9 @@ if len(get_all_nodes(server, project)) == 0:
     sys.exit(1)
 
 check_ipaddrs(server, project)
+
+docker_client = docker.from_env()
+docker_client.ping()
 
 #######
 # Run #
@@ -61,4 +66,7 @@ for n in sorted(iot_rest, key=lambda x: x.name):
     start_node(server, project, n.id)
     time.sleep(0.1)
 
-# start_all_iot(server, project)
+
+mirai_bot = next(filter(lambda i: i.name == "iotsim-mirai-bot-1", all_iot))
+container_mirai_bot = docker_client.containers.get(get_node_docker_container_id(server, project, mirai_bot.id))
+container_mirai_bot.update(mem_limit="512m", memswap_limit=-1, cpuset_cpus="0", cpu_period=100000, cpu_quota=10000)
