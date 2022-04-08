@@ -28,6 +28,9 @@ templates: Dockerfiles/certificates/Dockerfile Dockerfiles/DNS/dnsmasq.conf \
 
 vyosiso:
 	wget https://s3.amazonaws.com/s3-us.vyos.io/snapshot/vyos-1.3.0-rc6/vyos-1.3.0-rc6-amd64.iso
+	mv -v vyos-1.3.0-rc6-amd64.iso $(shell xdg-user-dir DOWNLOAD)
+	wget https://sourceforge.net/projects/gns-3/files/Empty%20Qemu%20disk/empty8G.qcow2
+	mv -v empty8G.qcow2 $(shell xdg-user-dir DOWNLOAD)
 
 Dockerfiles/certificates/Dockerfile: Dockerfiles/certificates/Dockerfile.template $(CONFIG_FILE)
 	sed 's/!PLACEHOLDER-MQTT_TLS_BROKER_CN!/$(MQTT_TLS_BROKER_CN)/g' $< > $@
