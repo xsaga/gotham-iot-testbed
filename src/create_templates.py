@@ -115,6 +115,7 @@ openvswitch_template_payload = {'adapters': openvswitch_appliance["docker"]['ada
                                 'compute_id': 'local',
                                 'image': openvswitch_appliance["docker"]["image"],
                                 'name': openvswitch_appliance["name"],
+                                'start_command': '/bin/sh -c "mkdir -p /var/run/openvswitch; /bin/sh /bin/boot.sh"',
                                 'symbol': ':/symbols/multilayer_switch.svg',
                                 'template_type': 'docker',
                                 'usage': openvswitch_appliance["usage"]}
