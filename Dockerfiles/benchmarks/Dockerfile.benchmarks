@@ -1,0 +1,10 @@
+FROM ubuntu:focal
+
+RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends \
+    iperf3 \
+    iproute2 \
+    iputils-ping \
+    stress-ng \
+    && rm -rf /var/lib/apt/lists/*
+
+CMD ["/bin/bash"]
