@@ -15,7 +15,7 @@ RUN apt update && apt install -y --no-install-recommends \
 RUN wget https://busybox.net/downloads/binaries/1.35.0-x86_64-linux-musl/busybox &&\
     chmod +x busybox &&\
     mv busybox /bin &&\
-    echo "/bin/busybox sh" > /bin/busyboxsh &&\
+    printf '#!/bin/sh\n/bin/busybox sh\n' > /bin/busyboxsh &&\
     chmod +x /bin/busyboxsh
 
 RUN pip3 install --no-cache-dir paho-mqtt
