@@ -1,4 +1,4 @@
-# iot-sim
+# Gotham Testbed: a Reproducible IoT Testbed for Security Experiments and Dataset Generation
 
 Work in Progres...
 
@@ -86,7 +86,7 @@ The artifacts (a .iso file and a .qcow2 file) will be downloaded into the `~/Dow
 GNS3 must be running.
 Inside the `./src` directory run:
 ```
-(venv) $ python3 create_topology_iotsim.py
+(venv) $ python3 create_topology_gotham.py
 ```
 
 ![gns3 topology](img/gns3_topology.png)
@@ -96,5 +96,5 @@ Inside the `./src` directory run:
 GNS3 must be running.
 Inside the `src/` directory run:
 ```
-(venv) $ python3 run_scenario_iotsim.py
+(venv) $ python3 run_scenario_gotham.py
 ```

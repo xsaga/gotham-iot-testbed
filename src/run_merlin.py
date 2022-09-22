@@ -125,7 +125,7 @@ def exec_merlin_agent(merlin_bot_container, cnc_addr: str, cnc_port: int, cnc_sl
 
 
 
-PROJECT_NAME = "iot_sim"
+PROJECT_NAME = "gotham_scenario"
 check_local_gns3_config()
 server = Server(*read_local_gns3_config())
 project = get_project_by_name(server, PROJECT_NAME)

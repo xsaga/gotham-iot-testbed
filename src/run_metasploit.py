@@ -40,7 +40,7 @@ def mqtt_bruteforce(hostname: str, telnet_port: int, rhost: str, rport: str, use
         print(tn.read_very_eager().decode("utf-8"))
 
 
-PROJECT_NAME = "iot_sim"
+PROJECT_NAME = "gotham_scenario"
 check_local_gns3_config()
 server = Server(*read_local_gns3_config())
 project = get_project_by_name(server, PROJECT_NAME)

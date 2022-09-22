@@ -1,4 +1,4 @@
-"""Create iot simulation topology (iot-sim)."""
+"""Create iot simulation topology (gotham scenario)."""
 
 import configparser
 import ipaddress
@@ -7,7 +7,7 @@ import time
 
 from gns3utils import *
 
-PROJECT_NAME = "iot_sim"
+PROJECT_NAME = "gotham_scenario"
 AUTO_CONFIGURE_ROUTERS = True
 
 check_resources()

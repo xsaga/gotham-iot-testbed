@@ -2,7 +2,7 @@ import json, re, graphviz
 
 dot = graphviz.Graph()
 
-with open("iot_sim.gns3", "r") as f:
+with open("gotham_scenario.gns3", "r") as f:
     project = json.load(f)
 
 topology = project["topology"]

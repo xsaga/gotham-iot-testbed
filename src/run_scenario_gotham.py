@@ -1,4 +1,4 @@
-"""Run scenario using the iot simulation topology (iot-sim)."""
+"""Run scenario using the iot simulation topology (gotham scenario)."""
 
 import re
 import sys
@@ -8,7 +8,7 @@ import docker
 
 from gns3utils import *
 
-PROJECT_NAME = "iot_sim"
+PROJECT_NAME = "gotham_scenario"
 
 check_resources()
 check_local_gns3_config()

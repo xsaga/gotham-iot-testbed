@@ -83,7 +83,7 @@ def exec_mirai_bot(mirai_bot_container):
     mirai_bot_container.top()
 
 
-PROJECT_NAME = "iot_sim"
+PROJECT_NAME = "gotham_scenario"
 check_local_gns3_config()
 server = Server(*read_local_gns3_config())
 project = get_project_by_name(server, PROJECT_NAME)
