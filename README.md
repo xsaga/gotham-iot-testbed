@@ -1,6 +1,11 @@
-# Gotham Testbed: a Reproducible IoT Testbed for Security Experiments and Dataset Generation
+# Gotham Testbed: A Reproducible IoT Testbed for Security Experiments and Dataset Generation
 
-Work in Progres...
+
+This repository contains the source code and implementation of the emulated testbed described in the following paper (open access):
+
+X. Sáez-de-Cámara, J. L. Flores, C. Arellano, A. Urbieta and U. Zurutuza, "Gotham Testbed: A Reproducible IoT Testbed for Security Experiments and Dataset Generation," in IEEE Transactions on Dependable and Secure Computing, doi: 10.1109/TDSC.2023.3247166.
+
+If you use or build upon this testbed, please consider citing the article.
 
 Tested on Ubuntu 20.04.4 LTS and 22.04 LTS
 
