@@ -17,6 +17,8 @@ Tested on Ubuntu 20.04.4 LTS and 22.04 LTS
 
 - wget
 
+- konsole (some scripts assume that the konsole terminal emulator is installed)
+
 - Python 3
 
 - Docker: https://docs.docker.com/engine/install/
