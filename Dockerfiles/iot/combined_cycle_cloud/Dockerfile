@@ -8,8 +8,11 @@ RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /opt/libcoap
-RUN git clone https://github.com/obgm/libcoap.git --recursive . &&\
-    git checkout main
+RUN git clone https://github.com/obgm/libcoap.git . &&\
+    git checkout release-4.3.0 &&\
+    git submodule init &&\
+    git submodule update
+
 COPY coap-client-mod.c examples/coap-client.c
 RUN ./autogen.sh &&\
     ./configure --enable-examples --enable-dtls --with-tinydtls --disable-shared --disable-documentation &&\
