@@ -564,6 +564,17 @@ def check_ipaddrs(server: Server, project: Project):
         raise ValueError(f"Duplicated ip addresses found: {duplicates}")
 
 
+def telnet_connect_retry(hostname: str, port: int, retries: int = 60, delay: float = 5) -> Telnet:
+    """Open a telnet connection, retrying while the node console is not ready yet."""
+    for attempt in range(retries):
+        try:
+            return Telnet(hostname, port)
+        except ConnectionRefusedError:
+            print(f"Console {hostname}:{port} not ready, retrying ({attempt + 1}/{retries})...")
+            time.sleep(delay)
+    raise ConnectionRefusedError(f"Console {hostname}:{port} not reachable")
+
+
 def install_vyos_image_on_node(node_id: str, hostname: str, telnet_port: int, pre_exec : Optional[str] = None) -> None:
     """Perform VyOS installation steps.
 
@@ -574,7 +585,9 @@ def install_vyos_image_on_node(node_id: str, hostname: str, telnet_port: int, pr
         import subprocess
         import shlex
         pre_proc = subprocess.Popen(shlex.split(pre_exec))
-    with Telnet(hostname, telnet_port) as tn:
+
+
+    with telnet_connect_retry(hostname, telnet_port) as tn:
         out = tn.read_until(b"vyos login:")
         print(out.decode("utf-8").split("\n")[-1])
 
@@ -671,7 +684,7 @@ def configure_vyos_image_on_node(node_id: str, hostname: str, telnet_port: int, 
     with open(path_script, "rb") as f:
         config = base64.b64encode(f.read())
 
-    with Telnet(hostname, telnet_port) as tn:
+    with telnet_connect_retry(hostname, telnet_port) as tn:
         out = tn.read_until(b"vyos login:")
         print(out.decode("utf-8").split("\n")[-1])
 
